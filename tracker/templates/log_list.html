@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Progress · Physio Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">My Session Logs</h1>
+  <a href="{% url 'log_create' %}" class="btn btn-primary btn-sm">Log New Session</a>
+</div>
+
+{% if logs %}
+  <div class="list-group">
+    {% for log in logs %}
+      <div class="list-group-item">
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1">{{ log.plan.name }}</h5>
+          <small class="text-muted">{{ log.date }}</small>
+        </div>
+        <p class="mb-1">Pain level: {{ log.pain_level }}/10</p>
+        {% if log.notes %}
+          <small class="text-muted">{{ log.notes }}</small>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">No session logs yet. After doing a plan, log a session to track your progress.</p>
+{% endif %}
+{% endblock %}

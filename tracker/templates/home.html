@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Home · Physio Tracker{% endblock %}
+
+{% block content %}
+
+<!-- Custom admin greeting -->
+{% if user.is_authenticated and is_physio %}
+  <div class="alert alert-info mb-4">
+    <strong>Hello Physio {{ user.username }}!</strong><br>
+    Welcome to the physio management view — here you can create and assign plans,
+    add new exercises, and review your patients' progress.
+  </div>
+{% endif %}
+
+<!-- Hero section -->
+<div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
+  <div class="container py-5">
+    <h1 class="display-6 fw-bold mb-3">Welcome to Physio Tracker</h1>
+    <p class="lead text-muted mb-4">
+      Your personal rehabilitation companion — track exercises, create custom plans,
+      and log your progress over time. Built with Django for simplicity and reliability.
+    </p>
+
+    {% if request.user.is_authenticated %}
+      <a href="{% url 'plan_list' %}" class="btn btn-primary btn-lg me-2">My Plans</a>
+      <a href="{% url 'log_list' %}" class="btn btn-outline-secondary btn-lg">View Progress</a>
+    {% else %}
+      <a href="{% url 'register' %}" class="btn btn-warning btn-lg me-2 text-dark fw-semibold">Get Started</a>
+      <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg">Login</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Features section -->
+<div class="row g-4 mb-4">
+  <div class="col-md-4">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body text-center">
+        <div class="mb-3">
+          <i class="bi bi-person-check display-5 text-primary"></i>
+        </div>
+        <h5 class="card-title">Personalised Experience</h5>
+        <p class="card-text small text-muted">
+          Create an account to build rehab plans tailored to your own goals and injury type.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body text-center">
+        <div class="mb-3">
+          <i class="bi bi-list-task display-5 text-success"></i>
+        </div>
+        <h5 class="card-title">Custom Plans</h5>
+        <p class="card-text small text-muted">
+          Select from a growing exercise library and combine them into your personal rehab plan.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body text-center">
+        <div class="mb-3">
+          <i class="bi bi-graph-up display-5 text-warning"></i>
+        </div>
+        <h5 class="card-title">Track Your Progress</h5>
+        <p class="card-text small text-muted">
+          Log pain levels and session notes to see your improvement over time.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Exercise preview section -->
+{% if exercises %}
+  <h2 class="h5 mb-3">Recently Added Exercises</h2>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+    {% for ex in exercises %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          {% if ex.image %}
+            <img src="{{ ex.image.url }}" class="card-img-top" alt="{{ ex.name }}" style="height:180px;object-fit:cover;">
+          {% endif %}
+          <div class="card-body">
+            <h6 class="card-title">{{ ex.name }}</h6>
+            <p class="small text-muted mb-0">{{ ex.body_area }} · {{ ex.difficulty }}</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% endblock %}

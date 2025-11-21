@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Delete Plan · Physio Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card page-card shadow-sm">
+      <div class="card-body">
+        <h1 class="h5 mb-3">Delete Plan</h1>
+        <p>Are you sure you want to delete the plan "<strong>{{ plan.name }}</strong>"?</p>
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Yes, delete</button>
+          <a href="{% url 'plan_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

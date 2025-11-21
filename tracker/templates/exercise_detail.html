@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ exercise.name }} · Physio Tracker{% endblock %}
+
+{% block content %}
+<div class="card page-card shadow-sm">
+  <div class="card-body">
+    {% if exercise.image %}
+      <img src="{{ exercise.image.url }}" class="img-fluid mb-3 rounded" style="max-height:300px;object-fit:cover;">
+    {% endif %}
+    <h1 class="h4">{{ exercise.name }}</h1>
+    <p class="text-muted">{{ exercise.body_area }} · {{ exercise.difficulty }}</p>
+    <p>{{ exercise.description }}</p>
+    <a href="{% url 'exercise_list' %}" class="btn btn-outline-secondary btn-sm">Back to list</a>
+  </div>
+</div>
+{% endblock %}
