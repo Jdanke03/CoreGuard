@@ -51,6 +51,7 @@ class Plan(models.Model):
         return f"{self.name} ({self.user.username})"
     
 
+
 class SessionLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
@@ -60,3 +61,23 @@ class SessionLog(models.Model):
 
     def __str__(self):
         return f"Log for {self.plan.name} on {self.date} ({self.user.username})"
+
+
+class AnalysisSession(models.Model):
+    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='analysis_sessions')
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='analysis_sessions_created'
+    )
+    exercise_name = models.CharField(max_length=100, default='Squat')
+    started_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    total_frames = models.IntegerField(default=0)
+    flagged_frames = models.IntegerField(default=0)
+    summary_json = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.exercise_name} session ({self.client.username})"

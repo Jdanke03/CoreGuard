@@ -11,7 +11,7 @@ class UserSignupForm(UserCreationForm):
         model = User
         fields = ("username", "email", "password1", "password2")
 
-
+# Plan Creation
 class PlanForm(forms.ModelForm):
     class Meta:
         model = Plan
@@ -22,6 +22,7 @@ class PlanForm(forms.ModelForm):
         }
 
 
+  # Progress Creation (logging)
 class SessionLogForm(forms.ModelForm):
     class Meta:
         model = SessionLog

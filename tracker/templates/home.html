@@ -7,23 +7,39 @@
 {% if user.is_authenticated and is_physio %}
   <div class="alert alert-info mb-4">
     <strong>Hello Physio {{ user.username }}!</strong><br>
-    Welcome to the physio management view — here you can create and assign plans,
-    add new exercises, and review your patients' progress.
+    You are now in the custom physiotherapist management view.
   </div>
 {% endif %}
 
 <!-- Hero section -->
 <div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
   <div class="container py-5">
-    <h1 class="display-6 fw-bold mb-3">Welcome to Physio Tracker</h1>
-    <p class="lead text-muted mb-4">
-      Your personal rehabilitation companion — track exercises, create custom plans,
-      and log your progress over time. Built with Django for simplicity and reliability.
-    </p>
+    {% if request.user.is_authenticated and is_physio %}
+      <h1 class="display-6 fw-bold mb-3">Welcome back, {{ user.username }}</h1>
+      <p class="lead text-muted mb-4">
+        Manage client plans, review analysis sessions, and keep rehabilitation on track.
+        CoreGuard supports clear, explainable feedback for exercise form.
+      </p>
+    {% elif request.user.is_authenticated %}
+      <h1 class="display-6 fw-bold mb-3">Welcome back, {{ user.username }}</h1>
+      <p class="lead text-muted mb-4">
+        Track your rehab plan, log progress, and start a live squat analysis session
+        for simple, easy-to-understand feedback.
+      </p>
+    {% else %}
+      <h1 class="display-6 fw-bold mb-3">Welcome to CoreGuard</h1>
+      <p class="lead text-muted mb-4">
+        Your personal rehabilitation companion — track exercises, create custom plans,
+        and log your progress over time. Built with Django for simplicity and reliability.
+      </p>
+    {% endif %}
 
-    {% if request.user.is_authenticated %}
+    {% if request.user.is_authenticated and is_physio %}
       <a href="{% url 'plan_list' %}" class="btn btn-primary btn-lg me-2">My Plans</a>
-      <a href="{% url 'log_list' %}" class="btn btn-outline-secondary btn-lg">View Progress</a>
+      <a href="{% url 'analysis_sessions_physio' %}" class="btn btn-outline-secondary btn-lg">Client Sessions</a>
+    {% elif request.user.is_authenticated %}
+      <a href="{% url 'plan_list' %}" class="btn btn-primary btn-lg me-2">My Plans</a>
+      <a href="{% url 'analysis_start' %}" class="btn btn-outline-secondary btn-lg">Live Analysis</a>
     {% else %}
       <a href="{% url 'register' %}" class="btn btn-warning btn-lg me-2 text-dark fw-semibold">Get Started</a>
       <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg">Login</a>

@@ -26,4 +26,13 @@ urlpatterns = [
     path('logs/', views.log_list, name='log_list'),
     path('logs/create/', views.log_create, name='log_create'),
     path('logs/create/<int:plan_id>/', views.log_create, name='log_create_for_plan'),
+
+    # Analysis
+    path('analysis/start/', views.analysis_start, name='analysis_start'),
+    path('analysis/live/<int:session_id>/', views.analysis_live, name='analysis_live'),
+    path('analysis/stream/<int:session_id>/', views.analysis_stream, name='analysis_stream'),
+    path('analysis/summary/<int:session_id>/', views.analysis_summary, name='analysis_summary'),
+    path('analysis/stop/<int:session_id>/', views.analysis_stop, name='analysis_stop'),
+    path('analysis/cancel/<int:session_id>/', views.analysis_cancel, name='analysis_cancel'),
+    path('analysis/physio/', views.analysis_sessions_physio, name='analysis_sessions_physio'),
 ]

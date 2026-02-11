@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Session Summary{% endblock %}
+
+{% block content %}
+<div class="card page-card p-4">
+  <h1 class="h4 mb-3">Session Summary</h1>
+  <p class="text-muted">Session ID: {{ session.id }}</p>
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="border rounded p-3 bg-light">
+        <div class="small text-muted">Total Frames</div>
+        <div class="h5 mb-0">{{ summary.total_frames|default:session.total_frames }}</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="border rounded p-3 bg-light">
+        <div class="small text-muted">Flagged Frames</div>
+        <div class="h5 mb-0">{{ summary.flagged_frames|default:session.flagged_frames }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <h2 class="h6">Rule Breaches</h2>
+    <ul class="mb-3">
+      <li>Knee cave-in: {{ summary.rules.knee_valgus|default:0 }}</li>
+      <li>Shallow depth: {{ summary.rules.shallow_depth|default:0 }}</li>
+      <li>Forward lean: {{ summary.rules.forward_lean|default:0 }}</li>
+    </ul>
+
+    <h2 class="h6">Angle Averages</h2>
+    <ul class="mb-3">
+      <li>Knee angle avg: {{ summary.angles.knee_avg|default:"-" }}°</li>
+      <li>Hip angle avg: {{ summary.angles.hip_avg|default:"-" }}°</li>
+    </ul>
+
+    <h2 class="h6">Plain-English Feedback</h2>
+    <ul class="mb-0">
+      {% for sentence in feedback %}
+        <li>{{ sentence }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

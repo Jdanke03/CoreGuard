@@ -25,7 +25,12 @@
         <a href="{% url 'plan_edit' plan.pk %}" class="btn btn-sm btn-outline-secondary">Edit plan</a>
         <a href="{% url 'plan_delete' plan.pk %}" class="btn btn-sm btn-outline-danger">Delete plan</a>
       {% endif %}
-      <a href="{% url 'log_create_for_plan' plan.pk %}" class="btn btn-sm btn-primary">Log session</a>
+      {% if not is_physio %}
+        <a href="{% url 'log_create_for_plan' plan.pk %}" class="btn btn-sm btn-primary">Log session</a>
+      {% endif %}
+      {% if not is_physio %}
+        <a href="{% url 'analysis_start' %}" class="btn btn-sm btn-outline-primary">Video analysis</a>
+      {% endif %}
       <a href="{% url 'plan_list' %}" class="btn btn-sm btn-outline-secondary">Back to plans</a>
     </div>
   </div>
