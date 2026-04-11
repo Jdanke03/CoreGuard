@@ -2,6 +2,16 @@
 
 {% block title %}Live Analysis{% endblock %}
 
+{% block extra_head %}
+<style>
+  .stream-status {
+    color: #d9e7f2;
+    font-size: 0.98rem;
+    text-align: center;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="surface-card surface-card-soft p-4 p-lg-5 mb-4">
   <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
@@ -20,11 +30,14 @@
 
 <div class="surface-card p-4">
   <div class="video-shell d-flex align-items-center justify-content-center" style="min-height: 520px;">
+    <div id="streamStatus" class="stream-status">Connecting to camera…</div>
     <img
+      id="analysisStream"
+      data-stream-url="{% url 'analysis_stream' session.id %}"
       src="{% url 'analysis_stream' session.id %}"
       alt="Live camera feed"
       class="img-fluid rounded"
-      style="max-height: 500px;"
+      style="max-height: 500px; display: none;"
     >
   </div>
 
@@ -33,4 +46,52 @@
     <a class="btn btn-outline-danger" href="{% url 'analysis_cancel' session.id %}">Cancel</a>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    const img = document.getElementById("analysisStream");
+    const status = document.getElementById("streamStatus");
+
+    if (!img || !status) return;
+
+    let retryCount = 0;
+    let retryTimer = null;
+    const maxRetries = 6;
+
+    function streamUrl() {
+      const baseUrl = img.dataset.streamUrl;
+      return `${baseUrl}?t=${Date.now()}`;
+    }
+
+    function scheduleRetry(delayMs) {
+      clearTimeout(retryTimer);
+      if (retryCount >= maxRetries) {
+        status.textContent = "Camera connection failed. Refresh once to try again.";
+        return;
+      }
+      retryCount += 1;
+      status.textContent = `Connecting to camera… retry ${retryCount} of ${maxRetries}`;
+      retryTimer = setTimeout(() => {
+        img.src = streamUrl();
+      }, delayMs);
+    }
+
+    img.addEventListener("load", function () {
+      clearTimeout(retryTimer);
+      status.style.display = "none";
+      img.style.display = "block";
+    });
+
+    img.addEventListener("error", function () {
+      img.style.display = "none";
+      status.style.display = "block";
+      scheduleRetry(1200);
+    });
+
+    // Force a fresh first request so Safari does not reuse a broken image state.
+    img.src = streamUrl();
+  })();
+</script>
 {% endblock %}
