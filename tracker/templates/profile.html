@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}My Profile · CoreGuard{% endblock %}
+
+{% block content %}
+<div class="surface-card surface-card-soft p-4 p-lg-5 mb-4">
+  <div>
+    <div class="section-kicker">Account overview</div>
+    <h1 class="h3 mb-2">My Profile</h1>
+    <p class="cg-muted mb-0">Review your account details and keep your email address up to date for plan updates and feedback delivery.</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="surface-card p-4 h-100">
+      <div class="section-kicker">Account details</div>
+      <div class="cg-list">
+        <div class="cg-item">
+          <div class="cg-meta mb-1">Username</div>
+          <div class="fw-semibold">{{ request.user.username }}</div>
+        </div>
+        <div class="cg-item">
+          <div class="cg-meta mb-1">Email</div>
+          <div class="fw-semibold">{{ request.user.email|default:"Not set" }}</div>
+        </div>
+        <div class="cg-item">
+          <div class="cg-meta mb-1">Role</div>
+          <div class="fw-semibold">{{ role }}</div>
+        </div>
+        <div class="cg-item">
+          <div class="cg-meta mb-1">Member since</div>
+          <div class="fw-semibold">{{ request.user.date_joined|date:"Y-m-d" }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="surface-card p-4 h-100">
+      <div class="section-kicker">Update contact details</div>
+      <h2 class="h4 mb-3">Update Email</h2>
+      <form method="post" class="form-shell">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">New email</label>
+          {{ form.email }}
+        </div>
+        <button type="submit" class="btn btn-primary">Save Email</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

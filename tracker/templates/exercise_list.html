@@ -1,36 +1,47 @@
 {% extends "base.html" %}
-{% block title %}Exercises · Physio Tracker{% endblock %}
+{% block title %}Exercises · CoreGuard{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h4 mb-0">Exercise Library</h1>
-
-  {% if can_add_exercise %}
-    <a href="{% url 'exercise_create' %}" class="btn btn-sm btn-primary">
-      Add new exercise
-    </a>
-  {% endif %}
+<div class="surface-card surface-card-soft p-4 p-lg-5 mb-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+    <div>
+      <div class="section-kicker">Exercise library</div>
+      <h1 class="h3 mb-2">Exercise Library</h1>
+      <p class="cg-muted mb-0">Browse the movement library used across plans, with clear summaries for body area, difficulty, and guidance.</p>
+    </div>
+    {% if can_add_exercise %}
+      <div>
+        <a href="{% url 'exercise_create' %}" class="btn btn-primary">Add New Exercise</a>
+      </div>
+    {% endif %}
+  </div>
 </div>
 
 {% if exercises %}
-<div class="row row-cols-1 row-cols-md-3 g-4">
-  {% for ex in exercises %}
-  <div class="col">
-    <div class="card h-100 shadow-sm">
-      {% if ex.image %}
-        <img src="{{ ex.image.url }}" class="card-img-top" style="height:200px;object-fit:cover;">
-      {% endif %}
-      <div class="card-body">
-        <h5 class="card-title">{{ ex.name }}</h5>
-        <p class="card-text text-muted mb-1">{{ ex.body_area }} · {{ ex.difficulty }}</p>
-        <p class="card-text small">{{ ex.description|truncatewords:20 }}</p>
-        <a href="{% url 'exercise_detail' ex.pk %}" class="btn btn-sm btn-primary">View Details</a>
+  <div class="row g-4">
+    {% for ex in exercises %}
+      <div class="col-md-6 col-xl-4">
+        <a href="{% url 'exercise_detail' ex.pk %}" class="surface-card cg-item-link h-100 d-block overflow-hidden">
+          {% if ex.image %}
+            <img src="{{ ex.image.url }}" alt="{{ ex.name }}" class="w-100" style="height: 220px; object-fit: cover;">
+          {% else %}
+            <div class="d-flex align-items-center justify-content-center" style="height: 220px; background: linear-gradient(135deg, rgba(25, 182, 179, 0.12), rgba(14, 42, 71, 0.08));">
+              <div class="cg-icon-box">EX</div>
+            </div>
+          {% endif %}
+          <div class="p-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+              <h2 class="h5 mb-0">{{ ex.name }}</h2>
+              <span class="cg-badge">{{ ex.difficulty }}</span>
+            </div>
+            <div class="cg-meta mb-2">{{ ex.body_area }}</div>
+            <p class="cg-muted mb-0">{{ ex.description|truncatewords:20 }}</p>
+          </div>
+        </a>
       </div>
-    </div>
+    {% endfor %}
   </div>
-  {% endfor %}
-</div>
 {% else %}
-<p class="text-muted">No exercises added yet.</p>
+  <div class="cg-empty">No exercises added yet.</div>
 {% endif %}
 {% endblock %}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CoreGuard Feedback</title>
+  </head>
+  <body style="margin:0;padding:0;font-family:Arial, sans-serif;background:#f5fafb;color:#0e2a47;">
+    <div style="max-width:640px;margin:0 auto;padding:24px;">
+      <div style="background:#0e2a47;color:#ffffff;padding:16px 20px;border-radius:12px 12px 0 0;">
+        <h1 style="margin:0;font-size:20px;">CoreGuard Session Feedback</h1>
+      </div>
+      <div style="background:#ffffff;border:1px solid #e6eef0;border-top:0;padding:20px;border-radius:0 0 12px 12px;">
+        <p style="margin:0 0 12px 0;">Hi {{ client.username }},</p>
+        <p style="margin:0 0 16px 0;">Your physio has shared feedback on your analysis session.</p>
+
+        <div style="background:#f2f7f8;border:1px solid #e6eef0;padding:12px;border-radius:8px;margin-bottom:16px;">
+          <strong>Session details</strong><br>
+          Exercise: {{ session.exercise_name }}<br>
+          Date: {{ session.started_at|date:"Y-m-d H:i" }}
+        </div>
+
+        <div style="border-left:4px solid #19b6b3;padding-left:12px;">
+          <strong>Physio feedback</strong>
+          <p style="margin:8px 0 0 0;">{{ session.physio_feedback|default:"No feedback provided." }}</p>
+        </div>
+
+        <div style="margin-top:16px;background:#f7fbfc;border:1px dashed #e0edf0;padding:12px;border-radius:8px;">
+          <strong>Next steps</strong>
+          <ul style="margin:8px 0 0 18px;">
+            <li>Review the notes above</li>
+            <li>Focus on the top 1–2 form cues from your physio</li>
+          </ul>
+        </div>
+
+        <p style="margin:16px 0 0 0;">Thanks,<br>CoreGuard</p>
+      </div>
+    </div>
+  </body>
+</html>

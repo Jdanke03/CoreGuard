@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}FAQ & Support · CoreGuard{% endblock %}
+
+{% block extra_head %}
+<style>
+  .support-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 2.75rem 0 2.2rem;
+    border-radius: 1.75rem;
+    background: linear-gradient(135deg, rgba(14, 42, 71, 0.04), rgba(25, 182, 179, 0.08));
+    margin-bottom: 2rem;
+  }
+
+  .support-hero::after {
+    content: "";
+    position: absolute;
+    right: -3rem;
+    top: -3rem;
+    width: 11rem;
+    height: 11rem;
+    background: radial-gradient(circle, rgba(25, 182, 179, 0.18), transparent 70%);
+    pointer-events: none;
+  }
+
+  .support-hero .inner {
+    position: relative;
+    z-index: 1;
+    padding: 0 2rem;
+  }
+
+  .faq-card {
+    background: #fff;
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1.25rem;
+    box-shadow: 0 16px 38px rgba(14, 42, 71, 0.06);
+    padding: 1.3rem;
+    height: 100%;
+  }
+
+  .faq-question {
+    color: var(--cg-navy);
+    font-weight: 700;
+    margin-bottom: .65rem;
+  }
+
+  .support-panel {
+    background: linear-gradient(135deg, #ffffff, rgba(25, 182, 179, 0.08));
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1.35rem;
+    box-shadow: 0 18px 40px rgba(14, 42, 71, 0.07);
+    padding: 1.4rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="support-hero">
+  <div class="inner">
+    <div class="section-kicker">FAQ & Support</div>
+    <h1 class="display-6 fw-bold text-dark mb-3">Helpful answers for the CoreGuard workflow</h1>
+    <p class="cg-muted mb-0" style="max-width: 44rem;">
+      This page explains the most important parts of the system clearly, including where feedback appears, how live analysis works, and what to expect when a plan requires video analysis.
+    </p>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-6 col-xl-4">
+    <div class="faq-card">
+      <div class="faq-question">Where do I see physiotherapist feedback?</div>
+      <p class="cg-muted mb-0">Feedback appears in the analysis session summary. Clients can open a completed session from their plan page and read the physiotherapist comments once they have been shared.</p>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-4">
+    <div class="faq-card">
+      <div class="faq-question">How does live analysis work?</div>
+      <p class="cg-muted mb-0">The client starts a live squat analysis session through a plan that requires it. CoreGuard processes the camera feed, creates summary metrics, and stores the session so it can be reviewed later by the physiotherapist.</p>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-4">
+    <div class="faq-card">
+      <div class="faq-question">What if my plan needs video analysis?</div>
+      <p class="cg-muted mb-0">Plans that require live analysis show a dedicated action to start the session. Once the session is completed, it becomes available in the plan area and can later include physiotherapist feedback.</p>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-6">
+    <div class="faq-card">
+      <div class="faq-question">What does the physiotherapist review?</div>
+      <p class="cg-muted mb-0">The physiotherapist can review frame counts, flagged movement rules, average angle metrics, and any AI-assisted feedback draft before sending final comments to the client.</p>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="faq-card">
+      <div class="faq-question">What is stored in a rehabilitation plan?</div>
+      <p class="cg-muted mb-0">Each plan stores its title, duration in weeks, notes, whether live analysis is required, and the exercise prescription including sets and reps for each exercise.</p>
+    </div>
+  </div>
+</div>
+
+<div class="support-panel">
+  <div class="section-kicker">Need Direction?</div>
+  <h2 class="h4 mb-2">Quick guidance by role</h2>
+  <div class="row g-4 mt-1">
+    <div class="col-md-6">
+      <h3 class="h6 mb-2">For physiotherapists</h3>
+      <p class="cg-muted mb-0">Create a plan, review submitted sessions, and share final feedback from the analysis summary page.</p>
+    </div>
+    <div class="col-md-6">
+      <h3 class="h6 mb-2">For clients</h3>
+      <p class="cg-muted mb-0">Open your plan, complete any required analysis session, then return later to the summary page to view shared feedback.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

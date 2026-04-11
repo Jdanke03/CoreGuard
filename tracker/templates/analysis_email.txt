@@ -1,0 +1,17 @@
+Hi {{ client.username }},
+
+Your physio has shared feedback on your CoreGuard analysis session.
+
+Session details:
+- Exercise: {{ session.exercise_name }}
+- Date: {{ session.started_at|date:"Y-m-d H:i" }}
+
+Physio feedback:
+{{ session.physio_feedback|default:"No feedback provided." }}
+
+Next steps:
+- Review the notes above
+- Focus on the top 1-2 form cues from your physio
+
+Thanks,
+CoreGuard

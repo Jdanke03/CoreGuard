@@ -2,46 +2,268 @@
 
 {% block title %}Session Summary{% endblock %}
 
-{% block content %}
-<div class="card page-card p-4">
-  <h1 class="h4 mb-3">Session Summary</h1>
-  <p class="text-muted">Session ID: {{ session.id }}</p>
+{% block extra_head %}
+<style>
+  .summary-shell {
+    display: grid;
+    gap: 1rem;
+  }
 
-  <div class="row">
-    <div class="col-md-4">
-      <div class="border rounded p-3 bg-light">
-        <div class="small text-muted">Total Frames</div>
-        <div class="h5 mb-0">{{ summary.total_frames|default:session.total_frames }}</div>
+  .summary-hero {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .summary-hero::after {
+    content: "";
+    position: absolute;
+    right: -3rem;
+    top: -3rem;
+    width: 10rem;
+    height: 10rem;
+    background: radial-gradient(circle, rgba(25, 182, 179, 0.16), transparent 70%);
+    pointer-events: none;
+  }
+
+  .summary-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .summary-stat-card {
+    background: #fff;
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1.1rem;
+    padding: 1rem 1.05rem;
+    height: 100%;
+  }
+
+  .summary-stat-label {
+    color: #678092;
+    font-size: .82rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: .35rem;
+  }
+
+  .summary-stat-value {
+    color: var(--cg-navy);
+    font-size: 1.85rem;
+    font-weight: 700;
+    line-height: 1.05;
+  }
+
+  .summary-score {
+    border-radius: 1rem;
+    background: rgba(25, 182, 179, 0.08);
+    padding: 1rem 1.1rem;
+  }
+
+  .summary-rule-card {
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1rem;
+    padding: 1rem 1.05rem;
+    background: #fff;
+  }
+
+  .summary-rule-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: .7rem;
+  }
+
+  .summary-progress {
+    height: .5rem;
+    border-radius: 999px;
+    background: rgba(14, 42, 71, 0.08);
+    overflow: hidden;
+  }
+
+  .summary-progress > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #19B6B3, #0E2A47);
+  }
+
+  .summary-angle-grid {
+    display: grid;
+    gap: .85rem;
+  }
+
+  .summary-angle-card {
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1rem;
+    background: #fff;
+    padding: 1rem 1.05rem;
+  }
+
+  .feedback-box textarea {
+    width: 100%;
+    min-height: 180px;
+    border: 1px solid rgba(14, 42, 71, 0.14);
+    border-radius: 1rem;
+    padding: 1rem 1.05rem;
+  }
+
+  .feedback-box textarea:focus {
+    outline: none;
+    border-color: var(--cg-turquoise);
+    box-shadow: 0 0 0 0.2rem rgba(25, 182, 179, 0.12);
+  }
+
+  .client-next-step {
+    background: linear-gradient(135deg, #ffffff, rgba(25, 182, 179, 0.08));
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1.25rem;
+    box-shadow: 0 16px 38px rgba(14, 42, 71, 0.06);
+    padding: 1.4rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="summary-shell">
+  <div class="surface-card surface-card-soft p-4 p-lg-5 summary-hero">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+      <div>
+        <div class="section-kicker">Analysis summary</div>
+        <h1 class="h3 mb-2">Session Summary</h1>
+        <p class="cg-meta mb-2">Session ID: {{ session.id }} · Exercise: {{ session.exercise_name }}</p>
+        <div class="d-flex flex-wrap gap-2">
+          {% if session.plan %}
+            <span class="cg-badge">Plan-linked session</span>
+          {% endif %}
+          {% if session.feedback_shared %}
+            <span class="cg-badge">Feedback shared</span>
+          {% else %}
+            <span class="cg-badge">Awaiting feedback share</span>
+          {% endif %}
+        </div>
       </div>
-    </div>
-    <div class="col-md-4">
-      <div class="border rounded p-3 bg-light">
-        <div class="small text-muted">Flagged Frames</div>
-        <div class="h5 mb-0">{{ summary.flagged_frames|default:session.flagged_frames }}</div>
-      </div>
+      {% if is_physio %}
+        <div class="summary-score">
+          <div class="summary-stat-label">Review focus</div>
+          <div class="cg-muted mb-0">Use the rule counts, angle averages, and stored session totals below to decide what feedback should be shared with the client.</div>
+        </div>
+      {% endif %}
     </div>
   </div>
 
-  <div class="mt-4">
-    <h2 class="h6">Rule Breaches</h2>
-    <ul class="mb-3">
-      <li>Knee cave-in: {{ summary.rules.knee_valgus|default:0 }}</li>
-      <li>Shallow depth: {{ summary.rules.shallow_depth|default:0 }}</li>
-      <li>Forward lean: {{ summary.rules.forward_lean|default:0 }}</li>
-    </ul>
+  {% if is_physio %}
+    {% widthratio summary.flagged_frames|default:session.flagged_frames summary.total_frames|default:session.total_frames 100 as flagged_rate %}
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="summary-stat-card">
+          <div class="summary-stat-label">Total frames</div>
+          <div class="summary-stat-value">{{ summary.total_frames|default:session.total_frames }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="summary-stat-card">
+          <div class="summary-stat-label">Flagged frames</div>
+          <div class="summary-stat-value">{{ summary.flagged_frames|default:session.flagged_frames }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="summary-stat-card">
+          <div class="summary-stat-label">Flagged rate</div>
+          <div class="summary-stat-value">{{ flagged_rate }}%</div>
+        </div>
+      </div>
+    </div>
 
-    <h2 class="h6">Angle Averages</h2>
-    <ul class="mb-3">
-      <li>Knee angle avg: {{ summary.angles.knee_avg|default:"-" }}°</li>
-      <li>Hip angle avg: {{ summary.angles.hip_avg|default:"-" }}°</li>
-    </ul>
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="surface-card p-4 h-100">
+          <div class="section-kicker">Rule checks</div>
+          <h2 class="h4 mb-3">Movement rule breaches</h2>
+          <div class="cg-list">
+            {% widthratio summary.rules.knee_valgus|default:0 summary.total_frames|default:session.total_frames 100 as knee_rate %}
+            {% widthratio summary.rules.shallow_depth|default:0 summary.total_frames|default:session.total_frames 100 as depth_rate %}
+            {% widthratio summary.rules.forward_lean|default:0 summary.total_frames|default:session.total_frames 100 as lean_rate %}
+            <div class="summary-rule-card">
+              <div class="summary-rule-top">
+                <span>Knee cave-in</span>
+                <span class="cg-badge">{{ summary.rules.knee_valgus|default:0 }}</span>
+              </div>
+              <div class="summary-progress"><span style="width: {{ knee_rate }}%;"></span></div>
+            </div>
+            <div class="summary-rule-card">
+              <div class="summary-rule-top">
+                <span>Shallow depth</span>
+                <span class="cg-badge">{{ summary.rules.shallow_depth|default:0 }}</span>
+              </div>
+              <div class="summary-progress"><span style="width: {{ depth_rate }}%;"></span></div>
+            </div>
+            <div class="summary-rule-card">
+              <div class="summary-rule-top">
+                <span>Forward lean</span>
+                <span class="cg-badge">{{ summary.rules.forward_lean|default:0 }}</span>
+              </div>
+              <div class="summary-progress"><span style="width: {{ lean_rate }}%;"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="surface-card p-4 h-100">
+          <div class="section-kicker">Angle metrics</div>
+          <h2 class="h4 mb-3">Average angles</h2>
+          <div class="summary-angle-grid">
+            <div class="summary-angle-card">
+              <div class="summary-stat-label">Knee angle average</div>
+              <div class="summary-stat-value">{{ summary.angles.knee_avg|default:"-" }}{% if summary.angles.knee_avg %}°{% endif %}</div>
+            </div>
+            <div class="summary-angle-card">
+              <div class="summary-stat-label">Hip angle average</div>
+              <div class="summary-stat-value">{{ summary.angles.hip_avg|default:"-" }}{% if summary.angles.hip_avg %}°{% endif %}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
 
-    <h2 class="h6">Plain-English Feedback</h2>
-    <ul class="mb-0">
-      {% for sentence in feedback %}
-        <li>{{ sentence }}</li>
-      {% endfor %}
-    </ul>
+  {% if not is_physio %}
+    <div class="client-next-step">
+      <div class="section-kicker">Next steps</div>
+      <h2 class="h4 mb-2">Session submitted successfully</h2>
+      <p class="cg-muted mb-0">Thank you for submitting your video exercise. Your physiotherapist will now review the session and reach out with feedback once it is ready. When feedback has been shared, it will appear in the section below.</p>
+    </div>
+  {% endif %}
+
+  <div class="surface-card p-4 p-lg-5">
+    <div class="section-kicker">Feedback</div>
+    <h2 class="h4 mb-3">Physio Feedback</h2>
+
+    {% if session.feedback_shared %}
+      <div class="cg-item">
+        <p class="mb-0">{{ session.physio_feedback|default:"No feedback provided." }}</p>
+      </div>
+    {% else %}
+      {% if feedback_form %}
+        <form method="post" class="feedback-box">
+          {% csrf_token %}
+          {{ feedback_form.as_p }}
+          <div class="summary-rule-card mt-3 mb-3">
+            <div class="summary-stat-label">Sharing this feedback</div>
+            <p class="cg-muted mb-0">When you send this, it will be saved to CoreGuard for the client and also delivered to their email address.</p>
+          </div>
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <button type="submit" name="generate_draft" value="1" class="btn btn-outline-primary">Generate AI Draft</button>
+            <button type="submit" class="btn btn-primary">Share with client and send email</button>
+          </div>
+        </form>
+        {% if session.physio_feedback_draft %}
+          <p class="cg-meta mt-3 mb-0">Draft saved. You can edit the text above before sending.</p>
+        {% endif %}
+      {% else %}
+        <div class="cg-empty">Feedback pending from physio.</div>
+      {% endif %}
+    {% endif %}
   </div>
 </div>
 {% endblock %}

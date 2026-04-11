@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <!-- Page title is overridden per-template -->
   <title>{% block title %}CoreGuard{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -10,18 +11,179 @@
   <link href="{% static 'tracker/bootstrap.min.css' %}" rel="stylesheet">
 
   <style>
+      /* Brand palette for CoreGuard */
       :root {
         --cg-navy: #0E2A47;
         --cg-turquoise: #19B6B3;
         --cg-light: #F5FAFB;
       }
 
+      /* App-wide styling tweaks */
       body.bg-light { background-color: var(--cg-light) !important; }
       .brand-logo { font-weight: 700; letter-spacing: .5px; }
       .brand-mark { height: 32px; width: auto; margin-right: .5rem; }
       .product-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: .5rem; }
-      .page-card { border-radius: 1rem; }
+      .page-card {
+        border-radius: 1.25rem;
+        border: 1px solid rgba(14, 42, 71, 0.08);
+        box-shadow: 0 18px 40px rgba(14, 42, 71, 0.07);
+      }
+      .section-kicker {
+        color: var(--cg-turquoise);
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: .65rem;
+      }
+      .surface-card {
+        background: #fff;
+        border: 1px solid rgba(14, 42, 71, 0.08);
+        border-radius: 1.25rem;
+        box-shadow: 0 16px 38px rgba(14, 42, 71, 0.06);
+      }
+      .surface-card-soft {
+        background: linear-gradient(135deg, #ffffff, rgba(25, 182, 179, 0.08));
+      }
+      .metric-card {
+        border: 1px solid rgba(14, 42, 71, 0.08);
+        border-radius: 1rem;
+        background: #fff;
+        padding: 1rem 1.1rem;
+      }
+      .metric-label {
+        color: #678092;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: .35rem;
+      }
+      .metric-value {
+        color: var(--cg-navy);
+        font-size: 1.65rem;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+      .cg-list {
+        display: grid;
+        gap: .85rem;
+      }
+      .cg-item {
+        background: #fff;
+        border: 1px solid rgba(14, 42, 71, 0.08);
+        border-radius: 1rem;
+        padding: 1rem 1.1rem;
+      }
+      .cg-item-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        transition: transform .16s ease, box-shadow .16s ease;
+      }
+      .cg-item-link:hover {
+        transform: translateY(-2px);
+      }
+      .cg-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: .28rem .65rem;
+        border-radius: 999px;
+        background: rgba(25, 182, 179, 0.12);
+        color: #0d5e5d;
+        font-size: .78rem;
+        font-weight: 700;
+      }
+      .cg-muted {
+        color: #627789;
+      }
+      .cg-meta {
+        color: #6f8799;
+        font-size: .9rem;
+      }
+      .cg-icon-box {
+        width: 2.8rem;
+        height: 2.8rem;
+        border-radius: .9rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(25, 182, 179, 0.12);
+        color: var(--cg-navy);
+        font-weight: 700;
+      }
+      .cg-empty {
+        padding: 1.5rem;
+        border: 1px dashed rgba(14, 42, 71, 0.16);
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.6);
+        color: #63788a;
+      }
+      .form-shell p {
+        margin-bottom: 1rem;
+      }
+      .form-shell label {
+        display: inline-block;
+        margin-bottom: .45rem;
+        color: var(--cg-navy);
+        font-weight: 600;
+      }
+      .form-shell input[type="text"],
+      .form-shell input[type="email"],
+      .form-shell input[type="password"],
+      .form-shell input[type="number"],
+      .form-shell input[type="file"],
+      .form-shell textarea,
+      .form-shell select,
+      .feedback-box textarea,
+      .feedback-box input[type="text"],
+      .feedback-box input[type="email"],
+      .feedback-box select {
+        width: 100%;
+        border: 1px solid rgba(14, 42, 71, 0.14);
+        border-radius: 1rem;
+        padding: .85rem 1rem;
+        background: #fff;
+        color: var(--cg-navy);
+        transition: border-color .16s ease, box-shadow .16s ease;
+      }
+      .form-shell input:focus,
+      .form-shell textarea:focus,
+      .form-shell select:focus,
+      .feedback-box textarea:focus,
+      .feedback-box input:focus,
+      .feedback-box select:focus {
+        outline: none;
+        border-color: var(--cg-turquoise);
+        box-shadow: 0 0 0 0.2rem rgba(25, 182, 179, 0.12);
+      }
+      .form-shell ul.errorlist,
+      .feedback-box ul.errorlist {
+        list-style: none;
+        padding-left: 0;
+        margin: .45rem 0 0;
+        color: #b54747;
+        font-size: .9rem;
+      }
+      .danger-card {
+        background: linear-gradient(135deg, #fff, rgba(220, 53, 69, 0.06));
+        border: 1px solid rgba(220, 53, 69, 0.14);
+        border-radius: 1.25rem;
+        box-shadow: 0 16px 38px rgba(14, 42, 71, 0.06);
+      }
+      .video-shell {
+        background: linear-gradient(160deg, #0b2036, #16395a);
+        border-radius: 1.25rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 1rem;
+      }
+      .info-panel {
+        border-radius: 1rem;
+        border: 1px solid rgba(14, 42, 71, 0.08);
+        background: rgba(25, 182, 179, 0.06);
+        padding: 1rem 1.1rem;
+      }
 
+      /* CoreGuard navbar + button colors */
       .navbar.bg-dark { background-color: var(--cg-navy) !important; }
       .btn-primary {
         background-color: var(--cg-turquoise);
@@ -57,6 +219,7 @@
       a:hover { color: #0b2136; }
   </style>
 
+  <!-- Per-page extra <head> content -->
   {% block extra_head %}{% endblock %}
 </head>
 
@@ -65,8 +228,9 @@
 <body class="bg-light">
 
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <div class="container">
+      <!-- Brand + logo -->
       <a class="navbar-brand brand-logo d-flex align-items-center" href="/">
         <img src="{% static 'tracker/coreguard-logo.jpg' %}" alt="CoreGuard logo" class="brand-mark">
         <span>CoreGuard</span>
@@ -76,23 +240,33 @@
       </button>
       <div id="navContent" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <!-- Shared navigation -->
           <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'plan_list' %}">My Plans</a></li>
+          {% if request.user.is_authenticated and request.user|has_group:"Physio" %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'plan_list' %}">My Clients</a></li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'plan_list' %}">My Plans</a></li>
+          {% endif %}
           
+          <!-- Client-only items -->
           {% if request.user.is_authenticated and not request.user|has_group:"Physio" %}
             <li class="nav-item"><a class="nav-link" href="{% url 'log_list' %}">Progress</a></li>
           {% endif %}
           {% if request.user.is_authenticated and not request.user|has_group:"Physio" %}
             <li class="nav-item"><a class="nav-link" href="{% url 'analysis_start' %}">Live Analysis</a></li>
           {% endif %}
+          <!-- Physio-only items -->
           {% if request.user.is_authenticated and request.user|has_group:"Physio" %}
             <li class="nav-item"><a class="nav-link" href="{% url 'analysis_sessions_physio' %}">Client Sessions</a></li>
           {% endif %}
           <li class="nav-item"><a class="nav-link" href="{% url 'exercise_list' %}">Exercises</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'faq_support' %}">FAQ / Support</a></li>
         </ul>
         <div class="d-flex">
+         <!-- Auth controls on the right -->
          {% if request.user.is_authenticated %}
            <span class="navbar-text me-3">Hi, {{ request.user.username }}</span>
+           <a class="btn btn-outline-light btn-sm me-2" href="{% url 'profile' %}">My Profile</a>
            <a class="btn btn-outline-light btn-sm" href="{% url 'logout' %}">Logout</a>
         {% else %}
            <a class="btn btn-outline-light btn-sm me-2" href="{% url 'login' %}">Login</a>
@@ -103,18 +277,31 @@
     </div>
   </nav>
 
+  <!-- Main page content -->
   <main class="container py-4">
+    {% if messages %}
+      <div class="mb-3">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }} shadow-sm border-0" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 
+  <!-- Simple footer -->
   <footer class="border-top bg-white py-3 mt-4">
     <div class="container small text-muted">
       &copy; {% now "Y" %} CoreGuard
     </div>
   </footer>
 
+  <!-- Bootstrap bundle for navbar and components -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+  <!-- Per-page scripts -->
   {% block extra_js %}{% endblock %}
 </body>
 </html>

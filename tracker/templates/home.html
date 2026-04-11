@@ -1,115 +1,800 @@
 {% extends "base.html" %}
-{% block title %}Home · Physio Tracker{% endblock %}
+{% block title %}Home · CoreGuard{% endblock %}
+
+{% block extra_head %}
+<style>
+  .dash-hero,
+  .dash-card,
+  .dash-step,
+  .dash-preview {
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1.4rem;
+    box-shadow: 0 18px 40px rgba(14, 42, 71, 0.07);
+  }
+
+  .dash-hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ffffff, rgba(25, 182, 179, 0.08));
+  }
+
+  .dash-hero::after {
+    content: "";
+    position: absolute;
+    right: -4rem;
+    top: -4rem;
+    width: 13rem;
+    height: 13rem;
+    background: radial-gradient(circle, rgba(25, 182, 179, 0.18), transparent 68%);
+    pointer-events: none;
+  }
+
+  .dash-hero .card-body {
+    position: relative;
+    z-index: 1;
+    padding: 2rem;
+  }
+
+  .dash-kicker {
+    color: var(--cg-turquoise);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+  }
+
+  .dash-hero h1 {
+    color: var(--cg-navy);
+    margin-bottom: 0.8rem;
+  }
+
+  .dash-hero p {
+    color: #607587;
+    max-width: 44rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .dash-card {
+    display: block;
+    height: 100%;
+    background: #fff;
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .dash-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 46px rgba(14, 42, 71, 0.12);
+  }
+
+  .dash-card .card-body {
+    padding: 1.35rem;
+  }
+
+  .dash-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .dash-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(25, 182, 179, 0.12);
+    color: var(--cg-navy);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .dash-chip {
+    display: inline-flex;
+    padding: 0.28rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(14, 42, 71, 0.06);
+    color: #5d7285;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .dash-card h2 {
+    color: var(--cg-navy);
+    margin-bottom: 0.45rem;
+  }
+
+  .dash-card p {
+    color: #627789;
+    margin-bottom: 1rem;
+  }
+
+  .dash-link {
+    color: var(--cg-turquoise);
+    font-weight: 700;
+    font-size: 0.92rem;
+  }
+
+  .dash-section-title {
+    color: var(--cg-navy);
+    margin-bottom: 1rem;
+  }
+
+  .client-section {
+    margin-top: 2.5rem;
+  }
+
+  .client-section:first-of-type {
+    margin-top: 0;
+  }
+
+  .client-actions .dash-card .card-body {
+    padding: 1.6rem;
+  }
+
+  .client-actions .dash-card p {
+    max-width: 18rem;
+  }
+
+  .client-steps {
+    margin-top: 0.4rem;
+  }
+
+  .client-library {
+    margin-top: 0.5rem;
+  }
+
+  .client-library .dash-preview .card-body {
+    padding: 1.2rem 1.3rem 1.35rem;
+  }
+
+  .client-library .dash-preview p {
+    margin-bottom: 0.85rem;
+  }
+
+  .client-library .card-img-top {
+    height: 190px;
+  }
+
+  .dash-step {
+    background: #fff;
+    padding: 1.25rem;
+    height: 100%;
+  }
+
+  .dash-step-number {
+    display: inline-flex;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    align-items: center;
+    justify-content: center;
+    background: var(--cg-navy);
+    color: #fff;
+    font-size: 0.84rem;
+    font-weight: 700;
+    margin-bottom: 0.85rem;
+  }
+
+  .dash-step p {
+    color: #627789;
+    margin-bottom: 0;
+  }
+
+  .dash-preview {
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .dash-preview .card-body {
+    padding: 1.4rem;
+  }
+
+  .dash-preview img {
+    height: 170px;
+    object-fit: cover;
+  }
+
+  .dash-preview p {
+    color: #627789;
+  }
+
+  .dash-metric {
+    background: #fff;
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1.3rem;
+    box-shadow: 0 18px 40px rgba(14, 42, 71, 0.07);
+    padding: 1.3rem 1.35rem;
+    height: 100%;
+  }
+
+  .dash-metric-label {
+    color: #6a8092;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.55rem;
+  }
+
+  .dash-metric-value {
+    color: var(--cg-navy);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+  }
+
+  .dash-panel {
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1.4rem;
+    box-shadow: 0 18px 40px rgba(14, 42, 71, 0.07);
+    height: 100%;
+  }
+
+  .dash-panel::after {
+    content: "";
+    position: absolute;
+    right: -3rem;
+    top: -3rem;
+    width: 9rem;
+    height: 9rem;
+    background: radial-gradient(circle, rgba(25, 182, 179, 0.12), transparent 68%);
+    pointer-events: none;
+  }
+
+  .dash-panel-body {
+    position: relative;
+    z-index: 1;
+    padding: 1.5rem;
+  }
+
+  .dash-panel canvas {
+    max-height: 280px;
+  }
+
+  .dash-chart-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 340px;
+  }
+
+  .dash-chart-wrap canvas {
+    max-height: 260px;
+  }
+
+  .dash-activity {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .dash-activity-item {
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1rem;
+    padding: 1rem 1.05rem;
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  .dash-activity-item strong,
+  .dash-activity-item h3 {
+    color: var(--cg-navy);
+  }
+
+  .client-metric-card {
+    background: #fff;
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1.25rem;
+    box-shadow: 0 18px 40px rgba(14, 42, 71, 0.07);
+    padding: 1.2rem 1.25rem;
+    height: 100%;
+  }
+
+  .client-metric-card .dash-metric-value {
+    font-size: 1.8rem;
+  }
+
+  @media (min-width: 992px) {
+    .client-actions .col-xl-4 {
+      width: 33.333333%;
+    }
+
+    .client-library .col-md-4 {
+      width: 50%;
+    }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-
-<!-- Custom admin greeting -->
-{% if user.is_authenticated and is_physio %}
-  <div class="alert alert-info mb-4">
-    <strong>Hello Physio {{ user.username }}!</strong><br>
-    You are now in the custom physiotherapist management view.
-  </div>
-{% endif %}
-
-<!-- Hero section -->
-<div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
-  <div class="container py-5">
-    {% if request.user.is_authenticated and is_physio %}
-      <h1 class="display-6 fw-bold mb-3">Welcome back, {{ user.username }}</h1>
-      <p class="lead text-muted mb-4">
-        Manage client plans, review analysis sessions, and keep rehabilitation on track.
-        CoreGuard supports clear, explainable feedback for exercise form.
+<div class="card dash-hero mb-4">
+  <div class="card-body">
+    {% if is_physio %}
+      <div class="dash-kicker">Physiotherapist dashboard</div>
+      <h1 class="display-6 fw-bold">Welcome back, {{ user.username }}</h1>
+      <p class="lead">
+        Manage your clients, review submitted analysis sessions, and keep rehab feedback organised from one place.
       </p>
-    {% elif request.user.is_authenticated %}
-      <h1 class="display-6 fw-bold mb-3">Welcome back, {{ user.username }}</h1>
-      <p class="lead text-muted mb-4">
-        Track your rehab plan, log progress, and start a live squat analysis session
-        for simple, easy-to-understand feedback.
-      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'plan_list' %}" class="btn btn-primary btn-lg">My Clients</a>
+        <a href="{% url 'analysis_sessions_physio' %}" class="btn btn-outline-secondary btn-lg">Client Sessions</a>
+        <a href="{% url 'exercise_list' %}" class="btn btn-outline-primary btn-lg">Exercise Library</a>
+      </div>
     {% else %}
-      <h1 class="display-6 fw-bold mb-3">Welcome to CoreGuard</h1>
-      <p class="lead text-muted mb-4">
-        Your personal rehabilitation companion — track exercises, create custom plans,
-        and log your progress over time. Built with Django for simplicity and reliability.
+      <div class="dash-kicker">Client dashboard</div>
+      <h1 class="display-6 fw-bold">Welcome back, {{ user.username }}</h1>
+      <p class="lead">
+        Access your rehab plan, record your progress, and complete live analysis sessions when your physio requests them.
       </p>
-    {% endif %}
-
-    {% if request.user.is_authenticated and is_physio %}
-      <a href="{% url 'plan_list' %}" class="btn btn-primary btn-lg me-2">My Plans</a>
-      <a href="{% url 'analysis_sessions_physio' %}" class="btn btn-outline-secondary btn-lg">Client Sessions</a>
-    {% elif request.user.is_authenticated %}
-      <a href="{% url 'plan_list' %}" class="btn btn-primary btn-lg me-2">My Plans</a>
-      <a href="{% url 'analysis_start' %}" class="btn btn-outline-secondary btn-lg">Live Analysis</a>
-    {% else %}
-      <a href="{% url 'register' %}" class="btn btn-warning btn-lg me-2 text-dark fw-semibold">Get Started</a>
-      <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg">Login</a>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'plan_list' %}" class="btn btn-primary btn-lg">My Plans</a>
+        <a href="{% url 'log_list' %}" class="btn btn-outline-secondary btn-lg">Progress</a>
+        <a href="{% url 'analysis_start' %}" class="btn btn-outline-primary btn-lg">Live Analysis</a>
+      </div>
     {% endif %}
   </div>
 </div>
 
-<!-- Features section -->
-<div class="row g-4 mb-4">
-  <div class="col-md-4">
-    <div class="card h-100 border-0 shadow-sm">
-      <div class="card-body text-center">
-        <div class="mb-3">
-          <i class="bi bi-person-check display-5 text-primary"></i>
-        </div>
-        <h5 class="card-title">Personalised Experience</h5>
-        <p class="card-text small text-muted">
-          Create an account to build rehab plans tailored to your own goals and injury type.
-        </p>
+{% if is_physio %}
+  <div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+      <div class="dash-metric">
+        <div class="dash-metric-label">Clients</div>
+        <div class="dash-metric-value">{{ physio_total_clients }}</div>
+        <div class="cg-muted">Distinct clients assigned to your plans.</div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="dash-metric">
+        <div class="dash-metric-label">Active Plans</div>
+        <div class="dash-metric-value">{{ physio_active_plans }}</div>
+        <div class="cg-muted">Current rehabilitation plans you have created.</div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="dash-metric">
+        <div class="dash-metric-label">Awaiting Review</div>
+        <div class="dash-metric-value">{{ physio_awaiting_review }}</div>
+        <div class="cg-muted">Submitted sessions that still need feedback.</div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="dash-metric">
+        <div class="dash-metric-label">Feedback Sent</div>
+        <div class="dash-metric-value">{{ physio_feedback_sent }}</div>
+        <div class="cg-muted">Analysis sessions already shared with clients.</div>
       </div>
     </div>
   </div>
 
-  <div class="col-md-4">
-    <div class="card h-100 border-0 shadow-sm">
-      <div class="card-body text-center">
-        <div class="mb-3">
-          <i class="bi bi-list-task display-5 text-success"></i>
+  <div class="row g-4 mb-4">
+    <div class="col-lg-5">
+      <div class="dash-panel">
+        <div class="dash-panel-body">
+          <div class="dash-kicker">Feedback overview</div>
+          <h2 class="h4 mb-3">Review status</h2>
+          <canvas id="feedbackStatusChart"></canvas>
         </div>
-        <h5 class="card-title">Custom Plans</h5>
-        <p class="card-text small text-muted">
-          Select from a growing exercise library and combine them into your personal rehab plan.
-        </p>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="dash-panel">
+        <div class="dash-panel-body">
+          <div class="dash-kicker">Client activity</div>
+          <h2 class="h4 mb-3">Sessions per client</h2>
+          <canvas id="sessionsPerClientChart"></canvas>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="col-md-4">
-    <div class="card h-100 border-0 shadow-sm">
-      <div class="card-body text-center">
-        <div class="mb-3">
-          <i class="bi bi-graph-up display-5 text-warning"></i>
-        </div>
-        <h5 class="card-title">Track Your Progress</h5>
-        <p class="card-text small text-muted">
-          Log pain levels and session notes to see your improvement over time.
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Exercise preview section -->
-{% if exercises %}
-  <h2 class="h5 mb-3">Recently Added Exercises</h2>
-  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-    {% for ex in exercises %}
-      <div class="col">
-        <div class="card h-100 shadow-sm">
-          {% if ex.image %}
-            <img src="{{ ex.image.url }}" class="card-img-top" alt="{{ ex.name }}" style="height:180px;object-fit:cover;">
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="dash-panel">
+        <div class="dash-panel-body">
+          <div class="dash-kicker">Recent activity</div>
+          <h2 class="h4 mb-3">Latest submitted sessions</h2>
+          {% if recent_sessions %}
+            <div class="dash-activity">
+              {% for session in recent_sessions %}
+                <a href="{% url 'analysis_summary' session.id %}" class="dash-activity-item text-decoration-none">
+                  <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                    <div>
+                      <h3 class="h6 mb-1">{{ session.client.username }}</h3>
+                      <div class="cg-meta">{{ session.exercise_name }} · {{ session.started_at|date:"Y-m-d H:i" }}</div>
+                    </div>
+                    <span class="cg-badge">{% if session.feedback_shared %}Reviewed{% else %}Pending{% endif %}</span>
+                  </div>
+                  <div class="cg-muted">Flagged frames: {{ session.flagged_frames }} / {{ session.total_frames }}</div>
+                </a>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="cg-empty">No submitted analysis sessions yet.</div>
           {% endif %}
-          <div class="card-body">
-            <h6 class="card-title">{{ ex.name }}</h6>
-            <p class="small text-muted mb-0">{{ ex.body_area }} · {{ ex.difficulty }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="dash-panel">
+        <div class="dash-panel-body">
+          <div class="dash-kicker">Needs attention</div>
+          <h2 class="h4 mb-3">Priority sessions</h2>
+          {% if clients_needing_attention %}
+            <div class="dash-activity">
+              {% for session in clients_needing_attention %}
+                <a href="{% url 'analysis_summary' session.id %}" class="dash-activity-item text-decoration-none">
+                  <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                    <strong>{{ session.client.username }}</strong>
+                    <span class="cg-badge">Flagged {{ session.flagged_frames }}</span>
+                  </div>
+                  <div class="cg-meta">{{ session.exercise_name }} · {{ session.started_at|date:"Y-m-d H:i" }}</div>
+                  <div class="cg-muted mt-2">This session is still awaiting physiotherapist review.</div>
+                </a>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="cg-empty">No pending sessions right now. You are all caught up.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="dash-section-title h4">Quick Actions</h2>
+  <div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-4">
+      <a href="{% url 'plan_list' %}" class="dash-card">
+        <div class="card-body">
+          <div class="dash-card-top">
+            <div class="dash-icon">01</div>
+            <div class="dash-chip">Manage</div>
+          </div>
+          <h2 class="h5">Review clients</h2>
+          <p>Open your client list to view assigned plans and drill into each client’s rehab activity.</p>
+          <div class="dash-link">Open client list</div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-6 col-xl-4">
+      <a href="{% url 'analysis_sessions_physio' %}" class="dash-card">
+        <div class="card-body">
+          <div class="dash-card-top">
+            <div class="dash-icon">02</div>
+            <div class="dash-chip">Review</div>
+          </div>
+          <h2 class="h5">Check submitted sessions</h2>
+          <p>Review live analysis summaries, generate an AI draft if needed, and send final feedback.</p>
+          <div class="dash-link">View client sessions</div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-6 col-xl-4">
+      <a href="{% url 'plan_create' %}" class="dash-card">
+        <div class="card-body">
+          <div class="dash-card-top">
+            <div class="dash-icon">03</div>
+            <div class="dash-chip">Create</div>
+          </div>
+          <h2 class="h5">Create a new plan</h2>
+          <p>Set up a rehab plan, attach exercises, and decide whether live analysis is required.</p>
+          <div class="dash-link">Create plan</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <h2 class="dash-section-title h4">Typical Workflow</h2>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="dash-step">
+        <div class="dash-step-number">1</div>
+        <h3 class="h5">Assign a plan</h3>
+        <p>Create a plan for a client and mark live analysis as required when needed.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="dash-step">
+        <div class="dash-step-number">2</div>
+        <h3 class="h5">Review the summary</h3>
+        <p>Open the linked session to inspect frame counts, rule breaches, and stored session data.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="dash-step">
+        <div class="dash-step-number">3</div>
+        <h3 class="h5">Share final feedback</h3>
+        <p>Edit your comments, send them to the client, and keep the feedback attached to the session.</p>
+      </div>
+    </div>
+  </div>
+
+{% else %}
+  <section class="client-section">
+    <div class="row g-4 mb-4">
+      <div class="col-md-6 col-xl-3">
+        <div class="client-metric-card">
+          <div class="dash-metric-label">Active Plans</div>
+          <div class="dash-metric-value">{{ client_active_plans }}</div>
+          <div class="cg-muted">Current rehab plans assigned to you.</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="client-metric-card">
+          <div class="dash-metric-label">Sessions Logged</div>
+          <div class="dash-metric-value">{{ client_sessions_logged }}</div>
+          <div class="cg-muted">Progress updates you have recorded.</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="client-metric-card">
+          <div class="dash-metric-label">Analyses Completed</div>
+          <div class="dash-metric-value">{{ client_analyses_completed }}</div>
+          <div class="cg-muted">Live analysis sessions completed so far.</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="client-metric-card">
+          <div class="dash-metric-label">Feedback Ready</div>
+          <div class="dash-metric-value">{{ client_feedback_ready }}</div>
+          <div class="cg-muted">Sessions that already have physio feedback.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="client-section">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="dash-panel h-100">
+          <div class="dash-panel-body">
+            <div class="dash-kicker">Feedback overview</div>
+            <h2 class="h4 mb-3">Session status</h2>
+            <div class="dash-chart-wrap">
+              <canvas id="clientStatusChart"></canvas>
+            </div>
           </div>
         </div>
       </div>
-    {% endfor %}
-  </div>
-{% endif %}
+      <div class="col-lg-7">
+        <div class="dash-panel">
+          <div class="dash-panel-body">
+            <div class="dash-kicker">Your latest updates</div>
+            <h2 class="h4 mb-3">What to do next</h2>
+            <div class="dash-activity">
+              <div class="dash-activity-item">
+                <div class="cg-meta mb-1">Latest feedback</div>
+                {% if latest_feedback_session %}
+                  <strong>{{ latest_feedback_session.exercise_name }}</strong>
+                  <div class="cg-muted mt-1">Feedback is ready from {{ latest_feedback_session.started_at|date:"Y-m-d H:i" }}.</div>
+                  <a href="{% url 'analysis_summary' latest_feedback_session.id %}" class="dash-link text-decoration-none mt-2 d-inline-block">Open feedback</a>
+                {% else %}
+                  <div class="cg-muted">No physio feedback has been shared yet.</div>
+                {% endif %}
+              </div>
+              <div class="dash-activity-item">
+                <div class="cg-meta mb-1">Most recent analysis</div>
+                {% if latest_analysis_session %}
+                  <strong>{{ latest_analysis_session.exercise_name }}</strong>
+                  <div class="cg-muted mt-1">Completed on {{ latest_analysis_session.started_at|date:"Y-m-d H:i" }}.</div>
+                  <a href="{% url 'analysis_summary' latest_analysis_session.id %}" class="dash-link text-decoration-none mt-2 d-inline-block">Open summary</a>
+                {% else %}
+                  <div class="cg-muted">No live analysis sessions have been completed yet.</div>
+                {% endif %}
+              </div>
+              <div class="dash-activity-item">
+                <div class="cg-meta mb-1">Next recommended action</div>
+                <strong>Next step</strong>
+                <div class="cg-muted mt-1">{{ client_next_action }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <section class="client-section">
+    <h2 class="dash-section-title h4">Get Started</h2>
+    <div class="row g-4 client-actions mb-2">
+      <div class="col-md-6 col-xl-4">
+        <a href="{% url 'plan_list' %}" class="dash-card">
+          <div class="card-body">
+            <div class="dash-card-top">
+              <div class="dash-icon">01</div>
+              <div class="dash-chip">Start here</div>
+            </div>
+            <h2 class="h5">Open your plans</h2>
+            <p>View your assigned rehab plans and check whether your physio has marked analysis as required.</p>
+            <div class="dash-link">Go to my plans</div>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 col-xl-4">
+        <a href="{% url 'log_list' %}" class="dash-card">
+          <div class="card-body">
+            <div class="dash-card-top">
+              <div class="dash-icon">02</div>
+              <div class="dash-chip">Track</div>
+            </div>
+            <h2 class="h5">Log your progress</h2>
+            <p>Record pain level and notes after a session to keep your physio updated on your progress.</p>
+            <div class="dash-link">View progress logs</div>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 col-xl-4">
+        <a href="{% url 'analysis_start' %}" class="dash-card">
+          <div class="card-body">
+            <div class="dash-card-top">
+              <div class="dash-icon">03</div>
+              <div class="dash-chip">Analyse</div>
+            </div>
+            <h2 class="h5">Start live analysis</h2>
+            <p>Choose a plan that requires squat analysis and complete the session using your camera.</p>
+            <div class="dash-link">Start analysis</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="client-section">
+    <h2 class="dash-section-title h4">How to Use CoreGuard</h2>
+    <div class="row g-4 client-steps">
+      <div class="col-md-4">
+        <div class="dash-step">
+          <div class="dash-step-number">1</div>
+          <h3 class="h5">Check your assigned plan</h3>
+          <p>Start by opening your rehab plan to see exercises, progress history, and analysis requirements.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="dash-step">
+          <div class="dash-step-number">2</div>
+          <h3 class="h5">Log a session</h3>
+          <p>After completing your exercises, record a short update with your pain level and any notes.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="dash-step">
+          <div class="dash-step-number">3</div>
+          <h3 class="h5">Review feedback</h3>
+          <p>When your physio sends comments, you can return to the analysis summary and read them there.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if exercises %}
+    <section class="client-section">
+      <h2 class="dash-section-title h4">Exercise Library</h2>
+      <div class="row g-4 client-library">
+        {% for ex in exercises %}
+          <div class="col-md-4">
+            <div class="card dash-preview h-100">
+              {% if ex.image %}
+                <img src="{{ ex.image.url }}" class="card-img-top" alt="{{ ex.name }}">
+              {% endif %}
+              <div class="card-body">
+                <h3 class="h5">{{ ex.name }}</h3>
+                <p class="small mb-3">{{ ex.body_area }} · {{ ex.difficulty }}</p>
+                <a href="{% url 'exercise_detail' ex.pk %}" class="btn btn-outline-primary btn-sm">View Exercise</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  {% if is_physio %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script>
+      const feedbackData = JSON.parse('{{ feedback_chart_data|escapejs }}');
+      const sessionsData = JSON.parse('{{ sessions_per_client_data|escapejs }}');
+
+      const feedbackChartEl = document.getElementById('feedbackStatusChart');
+      if (feedbackChartEl) {
+        new Chart(feedbackChartEl, {
+          type: 'doughnut',
+          data: {
+            labels: feedbackData.labels,
+            datasets: [{
+              data: feedbackData.values,
+              backgroundColor: ['#0E2A47', '#19B6B3'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            },
+            cutout: '68%'
+          }
+        });
+      }
+
+      const sessionsChartEl = document.getElementById('sessionsPerClientChart');
+      if (sessionsChartEl) {
+        new Chart(sessionsChartEl, {
+          type: 'bar',
+          data: {
+            labels: sessionsData.labels,
+            datasets: [{
+              label: 'Sessions',
+              data: sessionsData.values,
+              backgroundColor: '#19B6B3',
+              borderRadius: 10,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0
+                },
+                grid: {
+                  color: 'rgba(14, 42, 71, 0.08)'
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+      }
+    </script>
+  {% else %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script>
+      const clientStatusData = JSON.parse('{{ client_status_chart_data|escapejs }}');
+      const clientStatusChartEl = document.getElementById('clientStatusChart');
+
+      if (clientStatusChartEl) {
+        new Chart(clientStatusChartEl, {
+          type: 'doughnut',
+          data: {
+            labels: clientStatusData.labels,
+            datasets: [{
+              data: clientStatusData.values,
+              backgroundColor: ['#0E2A47', '#19B6B3'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            },
+            cutout: '68%'
+          }
+        });
+      }
+    </script>
+  {% endif %}
 {% endblock %}

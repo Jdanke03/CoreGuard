@@ -3,12 +3,57 @@
 {% block title %}Start Analysis{% endblock %}
 
 {% block content %}
-<div class="card page-card p-4">
-  <h1 class="h4 mb-3">Start Live Analysis</h1>
-  <p class="text-muted">This will start a live squat analysis session.</p>
-  <form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">Start Squat Session</button>
-  </form>
+<div class="surface-card surface-card-soft p-4 p-lg-5 mb-4">
+  <div>
+    <div class="section-kicker">Client analysis</div>
+    <h1 class="h3 mb-2">Start Live Analysis</h1>
+    {% if plan %}
+      <p class="cg-muted mb-0">You are about to begin a live squat analysis session for <strong>{{ plan.name }}</strong>.</p>
+    {% else %}
+      <p class="cg-muted mb-0">Choose one of your plans that requires analysis and start the live session from here.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="surface-card p-4 p-lg-5 h-100">
+      <div class="section-kicker">Session setup</div>
+      <h2 class="h4 mb-3">Prepare your analysis</h2>
+      <form method="post" class="form-shell">
+        {% csrf_token %}
+        {% if not plan %}
+          {% if available_plans %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Plans requiring analysis</label>
+              <select name="plan_id" class="form-select" required>
+                <option value="" selected disabled>Choose a plan</option>
+                {% for p in available_plans %}
+                  <option value="{{ p.id }}">{{ p.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          {% else %}
+            <div class="cg-empty mb-3">No plans currently require live analysis.</div>
+          {% endif %}
+        {% endif %}
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <button type="submit" class="btn btn-primary" {% if not plan and not available_plans %}disabled{% endif %}>Start Squat Session</button>
+          <a href="{% url 'plan_list' %}" class="btn btn-outline-secondary">Back to plans</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="surface-card p-4 h-100">
+      <div class="section-kicker">Before you begin</div>
+      <h2 class="h4 mb-3">Quick checklist</h2>
+      <div class="cg-list">
+        <div class="cg-item">Place the camera where your full body stays visible during the squat.</div>
+        <div class="cg-item">Make sure the room is bright enough for the pose landmarks to stay clear.</div>
+        <div class="cg-item">When you are ready, start the session and follow the on-screen stream.</div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

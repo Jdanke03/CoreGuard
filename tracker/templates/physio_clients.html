@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}My Clients · CoreGuard{% endblock %}
+
+{% block content %}
+<div class="surface-card surface-card-soft p-4 p-lg-5 mb-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+    <div>
+      <div class="section-kicker">Physiotherapist workspace</div>
+      <h1 class="h3 mb-2">My Clients</h1>
+      <p class="cg-muted mb-0">Review assigned clients, open their plans, and move into session feedback from here.</p>
+    </div>
+    <div>
+      <a href="{% url 'plan_create' %}" class="btn btn-primary">Create New Plan</a>
+    </div>
+  </div>
+</div>
+
+{% if clients %}
+  <div class="row g-4">
+    {% for client in clients %}
+      <div class="col-md-6 col-xl-4">
+        <a href="{% url 'physio_client_detail' client.id %}" class="surface-card cg-item-link h-100 p-4 d-block">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="cg-icon-box">P</div>
+            <span class="cg-badge">Client</span>
+          </div>
+          <h2 class="h5 mb-2">{{ client.username }}</h2>
+          <p class="cg-muted mb-3">Open this client to view assigned plans and related live analysis sessions.</p>
+          <div class="cg-meta">View client workspace</div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="cg-empty">No clients yet. Create a plan to assign your first client.</div>
+{% endif %}
+{% endblock %}

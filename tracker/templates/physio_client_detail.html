@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ client.username }} · Client{% endblock %}
+
+{% block content %}
+<div class="surface-card surface-card-soft p-4 p-lg-5 mb-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+    <div>
+      <div class="section-kicker">Client overview</div>
+      <h1 class="h3 mb-2">{{ client.username }}</h1>
+      <p class="cg-muted mb-0">Review this client’s plans and move directly into their rehabilitation workflow.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{% url 'plan_create' %}?client_id={{ client.id }}" class="btn btn-primary">Create plan for client</a>
+      <a href="{% url 'plan_list' %}" class="btn btn-outline-secondary">Back to clients</a>
+    </div>
+  </div>
+</div>
+
+<div class="surface-card p-4 p-lg-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <div class="section-kicker">Assigned plans</div>
+      <h2 class="h4 mb-0">Plans for {{ client.username }}</h2>
+    </div>
+  </div>
+
+  {% if plans %}
+    <div class="cg-list">
+      {% for plan in plans %}
+        <a href="{% url 'plan_detail' plan.pk %}" class="cg-item cg-item-link">
+          <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+            <div>
+              <h3 class="h5 mb-1">{{ plan.name }}</h3>
+              <div class="cg-meta">{{ plan.created_at|date:"Y-m-d H:i" }} · {{ plan.duration_weeks }} week{{ plan.duration_weeks|pluralize }}</div>
+            </div>
+            {% if plan.requires_analysis %}
+              <span class="cg-badge">Analysis required</span>
+            {% endif %}
+          </div>
+          <p class="cg-muted mb-0">{{ plan.description|default:"No description." }}</p>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="cg-empty">No plans yet for this client.</div>
+  {% endif %}
+</div>
+{% endblock %}

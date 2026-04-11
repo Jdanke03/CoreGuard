@@ -1,21 +1,163 @@
 {% extends "base.html" %}
-{% block title %}Login · Physio Tracker{% endblock %}
+{% block title %}Login · CoreGuard{% endblock %}
+
+{% block extra_head %}
+<style>
+  .auth-wrap {
+    padding: 2rem 0;
+  }
+
+  .auth-panel,
+  .auth-side {
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1.5rem;
+    box-shadow: 0 18px 45px rgba(14, 42, 71, 0.08);
+    height: 100%;
+  }
+
+  .auth-panel {
+    background: #fff;
+  }
+
+  .auth-side {
+    background: linear-gradient(145deg, #0e2a47, #163c62);
+    color: #fff;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .auth-side::after {
+    content: "";
+    position: absolute;
+    right: -3rem;
+    top: -3rem;
+    width: 11rem;
+    height: 11rem;
+    background: radial-gradient(circle, rgba(25, 182, 179, 0.22), transparent 68%);
+  }
+
+  .auth-panel .card-body {
+    padding: 2rem;
+  }
+
+  .auth-kicker {
+    color: var(--cg-turquoise);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+  }
+
+  .auth-title {
+    color: var(--cg-navy);
+    margin-bottom: 0.75rem;
+  }
+
+  .auth-copy {
+    color: #627789;
+    margin-bottom: 1.5rem;
+  }
+
+  .auth-form label {
+    font-weight: 600;
+    color: var(--cg-navy);
+    margin-bottom: 0.4rem;
+  }
+
+  .auth-form input {
+    width: 100%;
+    border: 1px solid rgba(14, 42, 71, 0.14);
+    border-radius: 0.9rem;
+    padding: 0.85rem 0.95rem;
+    background: #fff;
+  }
+
+  .auth-form input:focus {
+    outline: none;
+    border-color: var(--cg-turquoise);
+    box-shadow: 0 0 0 0.2rem rgba(25, 182, 179, 0.12);
+  }
+
+  .auth-form .helptext {
+    display: none;
+  }
+
+  .auth-form ul.errorlist {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.35rem 0 0;
+    color: #b02a37;
+    font-size: 0.88rem;
+  }
+
+  .auth-side h2 {
+    margin-bottom: 0.9rem;
+  }
+
+  .auth-side p,
+  .auth-side li {
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .auth-side ul {
+    padding-left: 1.1rem;
+    margin-bottom: 0;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card page-card shadow-sm">
-      <div class="card-body">
-        <h1 class="h4 mb-3">Login</h1>
-        <form method="post">
-          {% csrf_token %}
-          {{ form.as_p }}
-          <button type="submit" class="btn btn-primary">Login</button>
-        </form>
-        <p class="mt-3 small text-muted">
-          Don't have an account?
-          <a href="{% url 'register' %}">Sign up here</a>.
+<div class="auth-wrap">
+  <div class="row g-4 align-items-stretch">
+    <div class="col-lg-5">
+      <div class="auth-side">
+        <div class="auth-kicker" style="color: #9de8e6;">Welcome back</div>
+        <h2 class="h2">Sign in to continue with CoreGuard.</h2>
+        <p>
+          Access your plans, progress, live analysis sessions, and feedback workflow from one place.
         </p>
+        <ul>
+          <li>Physios can manage clients and review sessions</li>
+          <li>Clients can access plans and track progress</li>
+          <li>Live analysis summaries stay linked to the rehab workflow</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="card auth-panel">
+        <div class="card-body">
+          <div class="auth-kicker">Login</div>
+          <h1 class="auth-title h3">Sign in to your account</h1>
+          <p class="auth-copy">Enter your username and password to continue.</p>
+
+          <form method="post" class="auth-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="mb-3">
+              {{ form.username.label_tag }}
+              {{ form.username }}
+              {{ form.username.errors }}
+            </div>
+
+            <div class="mb-3">
+              {{ form.password.label_tag }}
+              {{ form.password }}
+              {{ form.password.errors }}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
+          </form>
+
+          <p class="mt-4 mb-0 text-muted">
+            Don’t have an account?
+            <a href="{% url 'register' %}">Create one here</a>.
+          </p>
+        </div>
       </div>
     </div>
   </div>

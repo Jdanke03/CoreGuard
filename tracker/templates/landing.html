@@ -1,0 +1,578 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Welcome to CoreGuard{% endblock %}
+
+{% block extra_head %}
+<style>
+  .landing-shell {
+    overflow: hidden;
+  }
+
+  .landing-hero {
+    position: relative;
+    padding: 4rem 0 3rem;
+  }
+
+  .landing-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at top right, rgba(25, 182, 179, 0.18), transparent 34%),
+      linear-gradient(135deg, rgba(14, 42, 71, 0.04), rgba(25, 182, 179, 0.08));
+    border-radius: 1.75rem;
+    z-index: 0;
+  }
+
+  .landing-hero > .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .eyebrow {
+    display: inline-block;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(25, 182, 179, 0.12);
+    color: var(--cg-navy);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    margin-bottom: 1rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2.4rem, 5vw, 4.4rem);
+    line-height: 1.02;
+    color: var(--cg-navy);
+    margin-bottom: 1.1rem;
+  }
+
+  .hero-copy {
+    max-width: 40rem;
+    font-size: 1.08rem;
+    color: #4f6478;
+    margin-bottom: 1.75rem;
+  }
+
+  .hero-actions .btn {
+    min-width: 150px;
+  }
+
+  .hero-note {
+    color: #6a7f92;
+    font-size: 0.95rem;
+    margin-top: 1rem;
+  }
+
+  .hero-panel {
+    position: relative;
+    padding: 1.25rem;
+    border-radius: 1.75rem;
+    background: linear-gradient(145deg, #0e2a47, #15395f);
+    color: #fff;
+    box-shadow: 0 30px 60px rgba(14, 42, 71, 0.22);
+  }
+
+  .hero-panel::after {
+    content: "";
+    position: absolute;
+    right: -2.2rem;
+    top: -2rem;
+    width: 9rem;
+    height: 9rem;
+    background: radial-gradient(circle, rgba(25, 182, 179, 0.22), transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.82rem;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 1rem;
+  }
+
+  .mock-card {
+    border-radius: 1.2rem;
+    background: #fff;
+    color: var(--cg-navy);
+    padding: 1rem;
+    min-height: 168px;
+  }
+
+  .mock-card.alt {
+    background: linear-gradient(180deg, rgba(25, 182, 179, 0.14), rgba(255, 255, 255, 0.92));
+  }
+
+  .mock-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+
+  .mock-stat {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+
+  .mock-muted {
+    color: #6a7f92;
+    font-size: 0.85rem;
+  }
+
+  .mock-bars {
+    display: flex;
+    align-items: end;
+    gap: 0.45rem;
+    height: 90px;
+    margin-top: 1rem;
+  }
+
+  .mock-bars span {
+    flex: 1;
+    border-radius: 0.6rem 0.6rem 0 0;
+    background: linear-gradient(180deg, var(--cg-turquoise), #118d8c);
+  }
+
+  .mock-list {
+    display: grid;
+    gap: 0.7rem;
+    margin-top: 0.8rem;
+  }
+
+  .mock-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid rgba(14, 42, 71, 0.08);
+    font-size: 0.92rem;
+  }
+
+  .mock-pill {
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(25, 182, 179, 0.16);
+    color: #0e5e5d;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  .section-block {
+    margin-top: 2.25rem;
+  }
+
+  .section-heading {
+    max-width: 42rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-heading .kicker {
+    color: var(--cg-turquoise);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.7rem;
+  }
+
+  .section-heading h2 {
+    color: var(--cg-navy);
+    margin-bottom: 0.75rem;
+  }
+
+  .section-heading p {
+    color: #617689;
+    margin-bottom: 0;
+  }
+
+  .feature-card,
+  .role-card,
+  .step-card,
+  .cta-panel {
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1.35rem;
+    background: #fff;
+    box-shadow: 0 18px 45px rgba(14, 42, 71, 0.07);
+  }
+
+  .feature-card {
+    padding: 1.25rem;
+    height: 100%;
+  }
+
+  .feature-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(25, 182, 179, 0.12);
+    color: var(--cg-navy);
+    font-weight: 700;
+    margin-bottom: 0.9rem;
+  }
+
+  .feature-card p,
+  .role-card p,
+  .step-card p {
+    color: #627789;
+    margin-bottom: 0;
+  }
+
+  .role-card {
+    overflow: hidden;
+    height: 100%;
+    max-width: 32rem;
+    margin: 0 auto;
+  }
+
+  .role-top {
+    padding: 1.4rem 1.4rem 0.9rem;
+    text-align: center;
+  }
+
+  .role-icon {
+    width: 4.25rem;
+    height: 4.25rem;
+    margin: 0 auto 1rem;
+    border-radius: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(14, 42, 71, 0.08), rgba(25, 182, 179, 0.2));
+    color: var(--cg-navy);
+    box-shadow: inset 0 0 0 1px rgba(14, 42, 71, 0.06);
+  }
+
+  .role-icon svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .role-points {
+    padding: 0.4rem 1.25rem 1.25rem;
+    margin: 0;
+    list-style: none;
+  }
+
+  .role-points li {
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+    padding: 0.8rem 0.25rem;
+    color: #4f6478;
+  }
+
+  .role-points li + li {
+    border-top: 1px solid rgba(14, 42, 71, 0.08);
+  }
+
+  .role-check {
+    width: 1.65rem;
+    height: 1.65rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.05rem;
+    background: rgba(25, 182, 179, 0.14);
+    color: #0e6e6d;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .step-card {
+    padding: 1.2rem;
+  }
+
+  .step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: var(--cg-navy);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.9rem;
+  }
+
+  .cta-panel {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(14, 42, 71, 0.96), rgba(21, 57, 95, 0.98));
+    color: #fff;
+  }
+
+  .cta-panel p {
+    color: rgba(255, 255, 255, 0.82);
+    margin-bottom: 1.25rem;
+    max-width: 42rem;
+  }
+
+  .trust-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .trust-chip {
+    padding: 0.55rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 991px) {
+    .hero-grid,
+    .steps-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .landing-hero {
+      padding-top: 2.5rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="landing-shell">
+  <section class="landing-hero">
+    <div class="container">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-6">
+          <div class="eyebrow">CoreGuard rehabilitation platform</div>
+          <h1 class="hero-title">Structured rehab support with clearer movement feedback.</h1>
+          <p class="hero-copy">
+            CoreGuard helps physiotherapists and clients stay aligned through rehab plans,
+            progress tracking, live squat analysis, and shareable feedback after each session.
+          </p>
+          <div class="hero-actions d-flex flex-wrap gap-2">
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Create Account</a>
+            <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg">Sign In</a>
+          </div>
+          <div class="hero-note">
+            Built for a simple physio-to-client workflow, with in-app review and optional email feedback sharing.
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="hero-panel">
+            <div class="hero-topbar">
+              <div class="hero-badge">
+                <img src="{% static 'tracker/coreguard-logo.jpg' %}" alt="CoreGuard logo" style="height:18px;width:auto;border-radius:4px;">
+                <span>CoreGuard workspace</span>
+              </div>
+              <div class="hero-badge">Live analysis + feedback</div>
+            </div>
+            <div class="hero-grid">
+              <div class="mock-card">
+                <div class="mock-title">Session Overview</div>
+                <div class="mock-stat">84%</div>
+                <div class="mock-muted">Frames captured with reliable pose detection</div>
+                <div class="mock-bars">
+                  <span style="height:48%;"></span>
+                  <span style="height:72%;"></span>
+                  <span style="height:58%;"></span>
+                  <span style="height:86%;"></span>
+                  <span style="height:64%;"></span>
+                </div>
+              </div>
+              <div class="mock-card alt">
+                <div class="mock-title">Active Plan</div>
+                <div class="mock-list">
+                  <div class="mock-row">
+                    <span>Squat analysis</span>
+                    <span class="mock-pill">Required</span>
+                  </div>
+                  <div class="mock-row">
+                    <span>Progress log</span>
+                    <span class="mock-pill">Updated</span>
+                  </div>
+                  <div class="mock-row" style="border-bottom:0;">
+                    <span>Physio review</span>
+                    <span class="mock-pill">Shared</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="section-heading">
+      <div class="kicker">Platform support</div>
+      <h2>One place for plans, progress, analysis, and follow-up.</h2>
+      <p>
+        The current CoreGuard workflow keeps the rehab journey structured from plan assignment through to analysis review and final feedback.
+      </p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-xl-3">
+        <div class="feature-card">
+          <div class="feature-icon">01</div>
+          <h3 class="h5">Rehab Plans</h3>
+          <p>Physiotherapists can create and assign exercise plans to individual clients.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="feature-card">
+          <div class="feature-icon">02</div>
+          <h3 class="h5">Progress Logs</h3>
+          <p>Clients can record pain level and notes to build a simple progress history over time.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="feature-card">
+          <div class="feature-icon">03</div>
+          <h3 class="h5">Live Analysis</h3>
+          <p>Squat sessions are analysed in real time using webcam pose tracking and rule-based checks.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="feature-card">
+          <div class="feature-icon">04</div>
+          <h3 class="h5">Feedback Sharing</h3>
+          <p>Physios can review a session, draft feedback, and send final comments back to the client.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="section-heading">
+      <div class="kicker">Who it is for</div>
+      <h2>Different views, one shared rehab workflow.</h2>
+      <p>
+        CoreGuard separates the physio and client experience clearly, while keeping both users connected through the same plan and session data.
+      </p>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="role-card">
+          <div class="role-top">
+            <div class="role-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 14v-4a7 7 0 1 0-14 0v4"></path>
+                <path d="M5 14h14"></path>
+                <path d="M12 7v6"></path>
+                <path d="M9 10h6"></path>
+              </svg>
+            </div>
+            <h3 class="h4">For Physiotherapists</h3>
+            <p>Manage clients, create plans, review live analysis summaries, and deliver final guidance.</p>
+          </div>
+          <ul class="role-points">
+            <li><span class="role-check">✓</span><span>Create plans for individual clients</span></li>
+            <li><span class="role-check">✓</span><span>Flag plans that require live analysis</span></li>
+            <li><span class="role-check">✓</span><span>Review recorded session summaries</span></li>
+            <li><span class="role-check">✓</span><span>Edit and send final written feedback</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="role-card">
+          <div class="role-top">
+            <div class="role-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="3.5"></circle>
+                <path d="M5.5 19.5a6.5 6.5 0 0 1 13 0"></path>
+              </svg>
+            </div>
+            <h3 class="h4">For Clients</h3>
+            <p>Access assigned plans, log rehab progress, complete guided analysis sessions, and read feedback.</p>
+          </div>
+          <ul class="role-points">
+            <li><span class="role-check">✓</span><span>View assigned rehab plans</span></li>
+            <li><span class="role-check">✓</span><span>Log sessions with pain levels and notes</span></li>
+            <li><span class="role-check">✓</span><span>Start squat analysis when required</span></li>
+            <li><span class="role-check">✓</span><span>Read physio feedback in-app and by email</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="section-heading">
+      <div class="kicker">Workflow</div>
+      <h2>How CoreGuard works from start to finish.</h2>
+      <p>
+        The process is intentionally simple: assign a plan, complete the session, review the summary, and return clear feedback.
+      </p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3 class="h5">Create or receive a plan</h3>
+        <p>The physio assigns a rehab plan with selected exercises and optional analysis requirements.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3 class="h5">Track rehab progress</h3>
+        <p>The client logs pain level and notes while following the assigned plan.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3 class="h5">Run live squat analysis</h3>
+        <p>Camera-based tracking checks simple rules for knee position, depth, and forward lean.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">4</div>
+        <h3 class="h5">Review and share feedback</h3>
+        <p>The physio reviews the summary, finalises comments, and sends them back to the client.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-panel">
+    <h2 class="h3 mb-3">Start with a clear rehab workflow.</h2>
+    <p>
+      CoreGuard is designed to make plan management, progress review, live analysis, and physio feedback easier to follow for both sides.
+    </p>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Sign Up</a>
+      <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">Login</a>
+    </div>
+    <div class="trust-row">
+      <div class="trust-chip">Structured plans</div>
+      <div class="trust-chip">Progress tracking</div>
+      <div class="trust-chip">Live squat analysis</div>
+      <div class="trust-chip">Feedback sharing</div>
+    </div>
+  </section>
+</div>
+{% endblock %}

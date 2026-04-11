@@ -1,20 +1,148 @@
 {% extends "base.html" %}
-{% block title %}{{ title }} · Physio Tracker{% endblock %}
+{% block title %}{{ title }} · CoreGuard{% endblock %}
+
+{% block extra_head %}
+<style>
+  .duration-readout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 5rem;
+    padding: .45rem .8rem;
+    border-radius: 999px;
+    background: rgba(25, 182, 179, 0.12);
+    color: #0d5e5d;
+    font-weight: 700;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-8">
-    <div class="card page-card shadow-sm">
-      <div class="card-body">
-        <h1 class="h4 mb-3">{{ title }}</h1>
-        <form method="post">
-          {% csrf_token %}
-          {{ form.as_p }}
+  <div class="col-lg-9">
+    <div class="surface-card surface-card-soft p-4 p-lg-5 mb-4">
+      <div class="section-kicker">Plan management</div>
+      <h1 class="h3 mb-2">{{ title }}</h1>
+      <p class="cg-muted mb-0">Build a more realistic rehab plan with duration, exercise prescription, notes, and optional live analysis.</p>
+    </div>
+
+    <div class="surface-card p-4 p-lg-5">
+      <form method="post" class="form-shell">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-4 mb-4">
+          <div class="col-md-6">
+            {{ form.user.label_tag }}
+            {{ form.user }}
+            {% if form.user.errors %}
+              <div class="text-danger small">{{ form.user.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            {{ form.name.label_tag }}
+            {{ form.name }}
+            {% if form.name.errors %}
+              <div class="text-danger small">{{ form.name.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              {{ form.duration_weeks.label_tag }}
+              <span class="duration-readout"><span id="durationValue">{{ form.duration_weeks.value|default:6 }}</span> week<span id="durationSuffix">{% if form.duration_weeks.value|default:6 != 1 %}s{% endif %}</span></span>
+            </div>
+            {{ form.duration_weeks }}
+            {% if form.duration_weeks.errors %}
+              <div class="text-danger small">{{ form.duration_weeks.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <div class="section-kicker">Exercise prescription</div>
+          <h2 class="h4 mb-3">Exercises, sets, and reps</h2>
+          <div class="cg-list">
+            {% with selected_exercises=form.exercises.value %}
+              {% for row in exercise_rows %}
+                <div class="cg-item">
+                  <div class="row g-3 align-items-center">
+                    <div class="col-lg-5">
+                      <div class="form-check mb-0">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          name="exercises"
+                          value="{{ row.exercise.id }}"
+                          id="exercise_{{ row.exercise.id }}"
+                          {% if selected_exercises and row.exercise.id|stringformat:"s" in selected_exercises %}checked{% endif %}
+                        >
+                        <label class="form-check-label fw-semibold" for="exercise_{{ row.exercise.id }}">
+                          {{ row.exercise.name }}
+                        </label>
+                      </div>
+                      <div class="cg-meta mt-1">{{ row.exercise.body_area }} · {{ row.exercise.difficulty }}</div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                      <label for="{{ row.sets_name }}" class="form-label mb-1">Sets</label>
+                      <input type="number" min="1" name="{{ row.sets_name }}" id="{{ row.sets_name }}" value="{{ row.sets_value }}" class="form-control">
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                      <label for="{{ row.reps_name }}" class="form-label mb-1">Reps</label>
+                      <input type="number" min="1" name="{{ row.reps_name }}" id="{{ row.reps_name }}" value="{{ row.reps_value }}" class="form-control">
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endwith %}
+          </div>
+          {% if form.exercises.errors %}
+            <div class="text-danger small mt-2">{{ form.exercises.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-4">
+          {{ form.description.label_tag }}
+          {{ form.description }}
+          {% if form.description.errors %}
+            <div class="text-danger small">{{ form.description.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-4 form-check">
+          {{ form.requires_analysis }}
+          <label class="form-check-label" for="{{ form.requires_analysis.id_for_label }}">{{ form.requires_analysis.label }}</label>
+          {% if form.requires_analysis.errors %}
+            <div class="text-danger small">{{ form.requires_analysis.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-3">
           <button type="submit" class="btn btn-primary">Save</button>
           <a href="{% url 'plan_list' %}" class="btn btn-outline-secondary">Cancel</a>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const durationInput = document.getElementById("id_duration_weeks");
+  const durationValue = document.getElementById("durationValue");
+  const durationSuffix = document.getElementById("durationSuffix");
+
+  if (durationInput && durationValue && durationSuffix) {
+    const updateDuration = () => {
+      durationValue.textContent = durationInput.value;
+      durationSuffix.textContent = durationInput.value === "1" ? "" : "s";
+    };
+
+    durationInput.addEventListener("input", updateDuration);
+    updateDuration();
+  }
+</script>
 {% endblock %}

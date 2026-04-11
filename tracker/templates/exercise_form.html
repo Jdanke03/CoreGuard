@@ -1,19 +1,24 @@
 {% extends "base.html" %}
-{% block title %}Add Exercise · Physio Tracker{% endblock %}
+{% block title %}Add Exercise · CoreGuard{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-8">
-    <div class="card page-card shadow-sm">
-      <div class="card-body">
-        <h1 class="h4 mb-3">Add New Exercise</h1>
-        <form method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          {{ form.as_p }}
+  <div class="col-lg-8">
+    <div class="surface-card surface-card-soft p-4 p-lg-5 mb-4">
+      <div class="section-kicker">Exercise management</div>
+      <h1 class="h3 mb-2">Add New Exercise</h1>
+      <p class="cg-muted mb-0">Create a new exercise entry for the CoreGuard library. This only changes the presentation layer; the form behaviour stays exactly the same.</p>
+    </div>
+
+    <div class="surface-card p-4 p-lg-5">
+      <form method="post" enctype="multipart/form-data" class="form-shell">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="d-flex flex-wrap gap-2 mt-3">
           <button type="submit" class="btn btn-primary">Save</button>
           <a href="{% url 'exercise_list' %}" class="btn btn-outline-secondary">Cancel</a>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   </div>
 </div>

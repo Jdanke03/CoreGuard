@@ -3,12 +3,21 @@
 {% block title %}Client Sessions{% endblock %}
 
 {% block content %}
-<div class="card page-card p-4">
-  <h1 class="h4 mb-3">Client Analysis Sessions</h1>
+<div class="surface-card surface-card-soft p-4 p-lg-5 mb-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+    <div>
+      <div class="section-kicker">Physiotherapist review</div>
+      <h1 class="h3 mb-2">Client Analysis Sessions</h1>
+      <p class="cg-muted mb-0">Browse completed client sessions, filter by user, and move straight into the summary and feedback screen.</p>
+    </div>
+  </div>
+</div>
 
-  <form method="get" class="row g-2 mb-3">
+<div class="surface-card p-4 mb-4">
+  <form method="get" class="row g-3 align-items-end">
     <div class="col-sm-6 col-md-4">
-      <select name="client" class="form-select">
+      <label for="clientFilter" class="form-label fw-semibold">Filter by client</label>
+      <select id="clientFilter" name="client" class="form-select">
         <option value="">All clients</option>
         {% for client in clients %}
           <option value="{{ client.id }}" {% if selected_client_id == client.id|stringformat:"s" %}selected{% endif %}>
@@ -21,23 +30,24 @@
       <button type="submit" class="btn btn-outline-primary">Filter</button>
     </div>
   </form>
-
-  {% if sessions %}
-    <div class="list-group">
-      {% for session in sessions %}
-        <a class="list-group-item list-group-item-action" href="{% url 'analysis_summary' session.id %}">
-          <div class="d-flex justify-content-between">
-            <strong>{{ session.client.username }}</strong>
-            <span class="text-muted">{{ session.started_at|date:"Y-m-d H:i" }}</span>
-          </div>
-          <div class="small text-muted">
-            {{ session.exercise_name }} · Frames: {{ session.total_frames }} · Flagged: {{ session.flagged_frames }}
-          </div>
-        </a>
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="text-muted mb-0">No analysis sessions yet.</p>
-  {% endif %}
 </div>
+
+{% if sessions %}
+  <div class="cg-list">
+    {% for session in sessions %}
+      <a class="cg-item cg-item-link" href="{% url 'analysis_summary' session.id %}">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-2">
+          <div>
+            <h2 class="h5 mb-1">{{ session.client.username }}</h2>
+            <div class="cg-meta">{{ session.exercise_name }} · {{ session.started_at|date:"Y-m-d H:i" }}</div>
+          </div>
+          <span class="cg-badge">Flagged {{ session.flagged_frames }} / {{ session.total_frames }}</span>
+        </div>
+        <p class="cg-muted mb-0">Open this session to review the analysis summary, generate a draft, or send final feedback.</p>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="cg-empty">No analysis sessions yet.</div>
+{% endif %}
 {% endblock %}

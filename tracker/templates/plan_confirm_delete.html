@@ -1,19 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Delete Plan · Physio Tracker{% endblock %}
+{% block title %}Delete Plan · CoreGuard{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card page-card shadow-sm">
-      <div class="card-body">
-        <h1 class="h5 mb-3">Delete Plan</h1>
-        <p>Are you sure you want to delete the plan "<strong>{{ plan.name }}</strong>"?</p>
-        <form method="post">
-          {% csrf_token %}
+  <div class="col-lg-6">
+    <div class="danger-card p-4 p-lg-5">
+      <div class="section-kicker">Delete plan</div>
+      <h1 class="h3 mb-3">Delete {{ plan.name }}?</h1>
+      <p class="cg-muted mb-4">This will remove the plan and should only be done if you are sure it is no longer needed for the client.</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="d-flex flex-wrap gap-2">
           <button type="submit" class="btn btn-danger">Yes, delete</button>
           <a href="{% url 'plan_list' %}" class="btn btn-outline-secondary">Cancel</a>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   </div>
 </div>

@@ -1,28 +1,40 @@
 {% extends "base.html" %}
-{% block title %}Progress · Physio Tracker{% endblock %}
+{% block title %}Progress · CoreGuard{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h4 mb-0">My Session Logs</h1>
-  <a href="{% url 'log_create' %}" class="btn btn-primary btn-sm">Log New Session</a>
+<div class="surface-card surface-card-soft p-4 p-lg-5 mb-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+    <div>
+      <div class="section-kicker">Client progress</div>
+      <h1 class="h3 mb-2">My Session Logs</h1>
+      <p class="cg-muted mb-0">Track how each session felt over time, including pain levels and notes linked back to your rehab plan.</p>
+    </div>
+    <div>
+      <a href="{% url 'log_create' %}" class="btn btn-primary">Log New Session</a>
+    </div>
+  </div>
 </div>
 
 {% if logs %}
-  <div class="list-group">
+  <div class="cg-list">
     {% for log in logs %}
-      <div class="list-group-item">
-        <div class="d-flex w-100 justify-content-between">
-          <h5 class="mb-1">{{ log.plan.name }}</h5>
-          <small class="text-muted">{{ log.date }}</small>
+      <div class="cg-item">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-2">
+          <div>
+            <h2 class="h5 mb-1">{{ log.plan.name }}</h2>
+            <div class="cg-meta">{{ log.date }}</div>
+          </div>
+          <span class="cg-badge">Pain {{ log.pain_level }}/10</span>
         </div>
-        <p class="mb-1">Pain level: {{ log.pain_level }}/10</p>
         {% if log.notes %}
-          <small class="text-muted">{{ log.notes }}</small>
+          <p class="cg-muted mb-0">{{ log.notes }}</p>
+        {% else %}
+          <p class="cg-muted mb-0">No notes were added for this session.</p>
         {% endif %}
       </div>
     {% endfor %}
   </div>
 {% else %}
-  <p class="text-muted">No session logs yet. After doing a plan, log a session to track your progress.</p>
+  <div class="cg-empty">No session logs yet. After doing a plan, log a session to track your progress.</div>
 {% endif %}
 {% endblock %}
