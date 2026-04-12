@@ -38,10 +38,67 @@
     height: 100%;
   }
 
-  .faq-question {
+  .faq-accordion {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .faq-item {
+    background: #fff;
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1.25rem;
+    box-shadow: 0 16px 38px rgba(14, 42, 71, 0.06);
+    overflow: hidden;
+  }
+
+  .faq-toggle {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    padding: 1.25rem 1.35rem;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
     color: var(--cg-navy);
     font-weight: 700;
-    margin-bottom: .65rem;
+    font-size: 1.03rem;
+  }
+
+  .faq-toggle:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px rgba(25, 182, 179, 0.22);
+  }
+
+  .faq-toggle::after {
+    content: "+";
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: rgba(25, 182, 179, 0.1);
+    color: var(--cg-turquoise);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    font-weight: 700;
+    transition: transform .2s ease, background .2s ease;
+  }
+
+  .faq-toggle[aria-expanded="true"]::after {
+    content: "−";
+    background: rgba(14, 42, 71, 0.08);
+    color: var(--cg-navy);
+  }
+
+  .faq-answer {
+    padding: 0 1.35rem 1.3rem;
+  }
+
+  .faq-answer p {
+    margin: 0;
   }
 
   .support-panel {
@@ -65,38 +122,59 @@
   </div>
 </div>
 
-<div class="row g-4 mb-4">
-  <div class="col-md-6 col-xl-4">
-    <div class="faq-card">
-      <div class="faq-question">Where do I see physiotherapist feedback?</div>
-      <p class="cg-muted mb-0">Feedback appears in the analysis session summary. Clients can open a completed session from their plan page and read the physiotherapist comments once they have been shared.</p>
+<div class="faq-accordion mb-4" id="faqAccordion">
+  <div class="faq-item">
+    <button class="faq-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#faqOne" aria-expanded="true" aria-controls="faqOne">
+      Where do I see physiotherapist feedback?
+    </button>
+    <div id="faqOne" class="collapse show" data-bs-parent="#faqAccordion">
+      <div class="faq-answer">
+        <p class="cg-muted">Feedback appears in the analysis session summary. Clients can open a completed session from their plan page and read the physiotherapist comments once they have been shared.</p>
+      </div>
     </div>
   </div>
-  <div class="col-md-6 col-xl-4">
-    <div class="faq-card">
-      <div class="faq-question">How does live analysis work?</div>
-      <p class="cg-muted mb-0">The client starts a live squat analysis session through a plan that requires it. CoreGuard processes the camera feed, creates summary metrics, and stores the session so it can be reviewed later by the physiotherapist.</p>
-    </div>
-  </div>
-  <div class="col-md-6 col-xl-4">
-    <div class="faq-card">
-      <div class="faq-question">What if my plan needs video analysis?</div>
-      <p class="cg-muted mb-0">Plans that require live analysis show a dedicated action to start the session. Once the session is completed, it becomes available in the plan area and can later include physiotherapist feedback.</p>
-    </div>
-  </div>
-</div>
 
-<div class="row g-4 mb-4">
-  <div class="col-md-6">
-    <div class="faq-card">
-      <div class="faq-question">What does the physiotherapist review?</div>
-      <p class="cg-muted mb-0">The physiotherapist can review frame counts, flagged movement rules, average angle metrics, and any AI-assisted feedback draft before sending final comments to the client.</p>
+  <div class="faq-item">
+    <button class="faq-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqTwo" aria-expanded="false" aria-controls="faqTwo">
+      How does live analysis work?
+    </button>
+    <div id="faqTwo" class="collapse" data-bs-parent="#faqAccordion">
+      <div class="faq-answer">
+        <p class="cg-muted">The client starts a live squat analysis session through a plan that requires it. CoreGuard processes the camera feed, creates summary metrics, and stores the session so it can be reviewed later by the physiotherapist.</p>
+      </div>
     </div>
   </div>
-  <div class="col-md-6">
-    <div class="faq-card">
-      <div class="faq-question">What is stored in a rehabilitation plan?</div>
-      <p class="cg-muted mb-0">Each plan stores its title, duration in weeks, notes, whether live analysis is required, and the exercise prescription including sets and reps for each exercise.</p>
+
+  <div class="faq-item">
+    <button class="faq-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqThree" aria-expanded="false" aria-controls="faqThree">
+      What if my plan needs video analysis?
+    </button>
+    <div id="faqThree" class="collapse" data-bs-parent="#faqAccordion">
+      <div class="faq-answer">
+        <p class="cg-muted">Plans that require live analysis show a dedicated action to start the session. Once the session is completed, it becomes available in the plan area and can later include physiotherapist feedback.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqFour" aria-expanded="false" aria-controls="faqFour">
+      What does the physiotherapist review?
+    </button>
+    <div id="faqFour" class="collapse" data-bs-parent="#faqAccordion">
+      <div class="faq-answer">
+        <p class="cg-muted">The physiotherapist can review frame counts, flagged movement rules, average angle metrics, and any AI-assisted feedback draft before sending final comments to the client.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqFive" aria-expanded="false" aria-controls="faqFive">
+      What is stored in a rehabilitation plan?
+    </button>
+    <div id="faqFive" class="collapse" data-bs-parent="#faqAccordion">
+      <div class="faq-answer">
+        <p class="cg-muted">Each plan stores its title, duration in weeks, notes, whether live analysis is required, and the exercise prescription including sets and reps for each exercise.</p>
+      </div>
     </div>
   </div>
 </div>
