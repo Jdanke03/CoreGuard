@@ -207,7 +207,8 @@
   .feature-card,
   .role-card,
   .step-card,
-  .cta-panel {
+  .cta-panel,
+  .analysis-showcase {
     border: 1px solid rgba(14, 42, 71, 0.08);
     border-radius: 1.35rem;
     background: #fff;
@@ -312,6 +313,96 @@
     padding: 1.2rem;
   }
 
+  .analysis-showcase {
+    position: relative;
+    overflow: hidden;
+    padding: 1.5rem;
+    background:
+      radial-gradient(circle at top right, rgba(25, 182, 179, 0.12), transparent 28%),
+      linear-gradient(135deg, rgba(14, 42, 71, 0.02), rgba(25, 182, 179, 0.06));
+  }
+
+  .analysis-showcase::after {
+    content: "";
+    position: absolute;
+    right: -3rem;
+    bottom: -3rem;
+    width: 10rem;
+    height: 10rem;
+    background: radial-gradient(circle, rgba(14, 42, 71, 0.07), transparent 70%);
+    pointer-events: none;
+  }
+
+  .analysis-copy {
+    max-width: 34rem;
+  }
+
+  .analysis-image-panel {
+    position: relative;
+    padding: 1rem;
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(14, 42, 71, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  }
+
+  .analysis-image-frame {
+    position: relative;
+    border-radius: 1.1rem;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at center, rgba(255, 255, 255, 0.96), rgba(231, 239, 246, 0.96) 60%, rgba(214, 225, 235, 0.94) 100%);
+  }
+
+  .analysis-image-frame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(25, 182, 179, 0.08), transparent 25%),
+      radial-gradient(circle at 78% 18%, rgba(14, 42, 71, 0.05), transparent 28%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .analysis-image {
+    position: relative;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+  }
+
+  .analysis-note-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+    margin-top: 1rem;
+  }
+
+  .analysis-note {
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(14, 42, 71, 0.06);
+    padding: 0.85rem 0.9rem;
+  }
+
+  .analysis-note strong {
+    display: block;
+    color: var(--cg-navy);
+    margin-bottom: 0.2rem;
+    font-size: 0.95rem;
+  }
+
+  .analysis-note span {
+    display: block;
+    color: #627789;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
   .step-number {
     display: inline-flex;
     align-items: center;
@@ -339,23 +430,10 @@
     max-width: 42rem;
   }
 
-  .trust-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
-  }
-
-  .trust-chip {
-    padding: 0.55rem 0.85rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.1);
-    font-size: 0.9rem;
-  }
-
   @media (max-width: 991px) {
     .hero-grid,
-    .steps-grid {
+    .steps-grid,
+    .analysis-note-grid {
       grid-template-columns: 1fr;
     }
 
@@ -424,6 +502,50 @@
                     <span class="mock-pill">Shared</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="analysis-showcase">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-5">
+          <div class="analysis-copy">
+            <div class="section-heading mb-0">
+              <div class="kicker">Movement Analysis Visual</div>
+              <h2>Designed to make movement review easy to understand at a glance.</h2>
+              <p>
+                CoreGuard uses a clear movement-tracking view to support squat analysis during live sessions.
+                This helps the platform present posture and joint alignment in a way that feels intuitive for both physiotherapists and clients.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="analysis-image-panel">
+            <div class="analysis-image-frame">
+              <img
+                src="{% static 'tracker/squat-analysis-hero.png' %}"
+                alt="Squat movement analysis visual"
+                class="analysis-image"
+              >
+            </div>
+            <div class="analysis-note-grid">
+              <div class="analysis-note">
+                <strong>Instant camera connection</strong>
+                <span>Starts from the user’s device camera so a live session can begin quickly with very little setup.</span>
+              </div>
+              <div class="analysis-note">
+                <strong>Live movement tracking</strong>
+                <span>Follows the squat position in real time to support rule checks around depth, posture, and knee alignment.</span>
+              </div>
+              <div class="analysis-note">
+                <strong>Simple client experience</strong>
+                <span>Keeps the process easy to use so clients can complete a session and return later for physiotherapist feedback.</span>
               </div>
             </div>
           </div>
@@ -526,38 +648,6 @@
     </div>
   </section>
 
-  <section class="section-block">
-    <div class="section-heading">
-      <div class="kicker">Workflow</div>
-      <h2>How CoreGuard works from start to finish.</h2>
-      <p>
-        The process is intentionally simple: assign a plan, complete the session, review the summary, and return clear feedback.
-      </p>
-    </div>
-    <div class="steps-grid">
-      <div class="step-card">
-        <div class="step-number">1</div>
-        <h3 class="h5">Create or receive a plan</h3>
-        <p>The physio assigns a rehab plan with selected exercises and optional analysis requirements.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-number">2</div>
-        <h3 class="h5">Track rehab progress</h3>
-        <p>The client logs pain level and notes while following the assigned plan.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-number">3</div>
-        <h3 class="h5">Run live squat analysis</h3>
-        <p>Camera-based tracking checks simple rules for knee position, depth, and forward lean.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-number">4</div>
-        <h3 class="h5">Review and share feedback</h3>
-        <p>The physio reviews the summary, finalises comments, and sends them back to the client.</p>
-      </div>
-    </div>
-  </section>
-
   <section class="cta-panel">
     <h2 class="h3 mb-3">Start with a clear rehab workflow.</h2>
     <p>
@@ -566,12 +656,6 @@
     <div class="d-flex flex-wrap gap-2">
       <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Sign Up</a>
       <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">Login</a>
-    </div>
-    <div class="trust-row">
-      <div class="trust-chip">Structured plans</div>
-      <div class="trust-chip">Progress tracking</div>
-      <div class="trust-chip">Live squat analysis</div>
-      <div class="trust-chip">Feedback sharing</div>
     </div>
   </section>
 </div>
