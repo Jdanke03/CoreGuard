@@ -240,27 +240,42 @@
       </button>
       <div id="navContent" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <!-- Shared navigation -->
-          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-          {% if request.user.is_authenticated and request.user|has_group:"Physio" %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'plan_list' %}">My Clients</a></li>
+          {% if request.user.is_authenticated %}
+            <!-- Shared navigation -->
+            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+            {% if request.user|has_group:"Physio" %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'plan_list' %}">My Clients</a></li>
+            {% else %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'plan_list' %}">My Plans</a></li>
+            {% endif %}
+            
+            <!-- Client-only items -->
+            {% if not request.user|has_group:"Physio" %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'log_list' %}">Progress</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'analysis_start' %}">Live Analysis</a></li>
+            {% endif %}
+
+            <!-- Physio-only items -->
+            {% if request.user|has_group:"Physio" %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'analysis_sessions_physio' %}">Client Sessions</a></li>
+            {% endif %}
+
+            <li class="nav-item"><a class="nav-link" href="{% url 'exercise_list' %}">Exercises</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'faq_support' %}">FAQ / Support</a></li>
           {% else %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'plan_list' %}">My Plans</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#landing-home">Home</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="publicHowItWorks" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                How It Works
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="publicHowItWorks">
+                <li><a class="dropdown-item" href="{% url 'home' %}#movement-analysis">Movement Analysis</a></li>
+                <li><a class="dropdown-item" href="{% url 'home' %}#platform-support">CoreGuard Workflow</a></li>
+                <li><a class="dropdown-item" href="{% url 'home' %}#user-roles">User Roles</a></li>
+                <li><a class="dropdown-item" href="{% url 'faq_support' %}">FAQ / Support</a></li>
+              </ul>
+            </li>
           {% endif %}
-          
-          <!-- Client-only items -->
-          {% if request.user.is_authenticated and not request.user|has_group:"Physio" %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'log_list' %}">Progress</a></li>
-          {% endif %}
-          {% if request.user.is_authenticated and not request.user|has_group:"Physio" %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'analysis_start' %}">Live Analysis</a></li>
-          {% endif %}
-          <!-- Physio-only items -->
-          {% if request.user.is_authenticated and request.user|has_group:"Physio" %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'analysis_sessions_physio' %}">Client Sessions</a></li>
-          {% endif %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'exercise_list' %}">Exercises</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'faq_support' %}">FAQ / Support</a></li>
         </ul>
         <div class="d-flex">
          <!-- Auth controls on the right -->
