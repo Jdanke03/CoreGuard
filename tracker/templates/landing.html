@@ -180,6 +180,39 @@
     margin-top: 2.25rem;
   }
 
+  .reveal-section {
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+
+  .reveal-section.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-card {
+    opacity: 0;
+    transform: translateY(34px) scale(0.97);
+    transition:
+      opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+
+  .reveal-section.is-visible .reveal-card {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .reveal-delay-1 { transition-delay: 0.08s; }
+  .reveal-delay-2 { transition-delay: 0.16s; }
+  .reveal-delay-3 { transition-delay: 0.24s; }
+  .reveal-delay-4 { transition-delay: 0.32s; }
+
   .section-heading {
     max-width: 42rem;
     margin-bottom: 1.5rem;
@@ -441,12 +474,26 @@
       padding-top: 2.5rem;
     }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-section {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .reveal-card {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="landing-shell">
-  <section class="landing-hero">
+  <section class="landing-hero reveal-section">
     <div class="container">
       <div class="row align-items-center g-4">
         <div class="col-lg-6">
@@ -510,7 +557,7 @@
     </div>
   </section>
 
-  <section class="section-block">
+  <section class="section-block reveal-section">
     <div class="analysis-showcase">
       <div class="row align-items-center g-4">
         <div class="col-lg-5">
@@ -535,15 +582,15 @@
               >
             </div>
             <div class="analysis-note-grid">
-              <div class="analysis-note">
+              <div class="analysis-note reveal-card reveal-delay-1">
                 <strong>Instant camera connection</strong>
                 <span>Starts from the user’s device camera so a live session can begin quickly with very little setup.</span>
               </div>
-              <div class="analysis-note">
+              <div class="analysis-note reveal-card reveal-delay-2">
                 <strong>Live movement tracking</strong>
                 <span>Follows the squat position in real time to support rule checks around depth, posture, and knee alignment.</span>
               </div>
-              <div class="analysis-note">
+              <div class="analysis-note reveal-card reveal-delay-3">
                 <strong>Simple client experience</strong>
                 <span>Keeps the process easy to use so clients can complete a session and return later for physiotherapist feedback.</span>
               </div>
@@ -554,7 +601,7 @@
     </div>
   </section>
 
-  <section class="section-block">
+  <section class="section-block reveal-section">
     <div class="section-heading">
       <div class="kicker">Platform support</div>
       <h2>One place for plans, progress, analysis, and follow-up.</h2>
@@ -564,28 +611,28 @@
     </div>
     <div class="row g-4">
       <div class="col-md-6 col-xl-3">
-        <div class="feature-card">
+        <div class="feature-card reveal-card reveal-delay-1">
           <div class="feature-icon">01</div>
           <h3 class="h5">Rehab Plans</h3>
           <p>Physiotherapists can create and assign exercise plans to individual clients.</p>
         </div>
       </div>
       <div class="col-md-6 col-xl-3">
-        <div class="feature-card">
+        <div class="feature-card reveal-card reveal-delay-2">
           <div class="feature-icon">02</div>
           <h3 class="h5">Progress Logs</h3>
           <p>Clients can record pain level and notes to build a simple progress history over time.</p>
         </div>
       </div>
       <div class="col-md-6 col-xl-3">
-        <div class="feature-card">
+        <div class="feature-card reveal-card reveal-delay-3">
           <div class="feature-icon">03</div>
           <h3 class="h5">Live Analysis</h3>
           <p>Squat sessions are analysed in real time using webcam pose tracking and rule-based checks.</p>
         </div>
       </div>
       <div class="col-md-6 col-xl-3">
-        <div class="feature-card">
+        <div class="feature-card reveal-card reveal-delay-4">
           <div class="feature-icon">04</div>
           <h3 class="h5">Feedback Sharing</h3>
           <p>Physios can review a session, draft feedback, and send final comments back to the client.</p>
@@ -594,7 +641,7 @@
     </div>
   </section>
 
-  <section class="section-block">
+  <section class="section-block reveal-section">
     <div class="section-heading">
       <div class="kicker">Who it is for</div>
       <h2>Different views, one shared rehab workflow.</h2>
@@ -604,7 +651,7 @@
     </div>
     <div class="row g-4">
       <div class="col-lg-6">
-        <div class="role-card">
+        <div class="role-card reveal-card reveal-delay-1">
           <div class="role-top">
             <div class="role-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -626,7 +673,7 @@
         </div>
       </div>
       <div class="col-lg-6">
-        <div class="role-card">
+        <div class="role-card reveal-card reveal-delay-2">
           <div class="role-top">
             <div class="role-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -648,7 +695,7 @@
     </div>
   </section>
 
-  <section class="cta-panel">
+  <section class="cta-panel reveal-section">
     <h2 class="h3 mb-3">Start with a clear rehab workflow.</h2>
     <p>
       CoreGuard is designed to make plan management, progress review, live analysis, and physio feedback easier to follow for both sides.
@@ -659,4 +706,38 @@
     </div>
   </section>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('.reveal-section').forEach((item) => {
+        item.classList.add('is-visible');
+      });
+      return;
+    }
+
+    const revealItems = document.querySelectorAll('.reveal-section');
+    if (!revealItems.length || !('IntersectionObserver' in window)) {
+      revealItems.forEach((item) => item.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        } else {
+          entry.target.classList.remove('is-visible');
+        }
+      });
+    }, {
+      threshold: 0.16,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    revealItems.forEach((item) => observer.observe(item));
+  })();
+</script>
 {% endblock %}

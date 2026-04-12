@@ -302,6 +302,64 @@
     font-size: 1.8rem;
   }
 
+  .plan-summary-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(25, 182, 179, 0.06));
+  }
+
+  .plan-summary-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .plan-summary-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+  }
+
+  .plan-summary-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(14, 42, 71, 0.06);
+    color: #5d7285;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .plan-summary-list {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .plan-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.95rem 1rem;
+    border: 1px solid rgba(14, 42, 71, 0.08);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  .plan-summary-row strong {
+    color: var(--cg-navy);
+    display: block;
+    margin-bottom: 0.15rem;
+  }
+
+  .plan-summary-rx {
+    color: var(--cg-turquoise);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
   @media (min-width: 992px) {
     .client-actions .col-xl-4 {
       width: 33.333333%;
@@ -603,6 +661,67 @@
   </section>
 
   <section class="client-section">
+    <div class="dash-panel plan-summary-card">
+      <div class="dash-panel-body">
+        <div class="dash-kicker">Latest assigned plan</div>
+        <div class="plan-summary-top">
+          <div>
+            {% if latest_client_plan %}
+              <h2 class="h4 mb-2">{{ latest_client_plan.name }}</h2>
+              <div class="cg-muted mb-0">Your most recently assigned rehabilitation plan at a glance.</div>
+            {% else %}
+              <h2 class="h4 mb-2">No plan assigned yet</h2>
+              <div class="cg-muted mb-0">Once your physiotherapist assigns a plan, it will appear here for quick access.</div>
+            {% endif %}
+          </div>
+          {% if latest_client_plan %}
+            <a href="{% url 'plan_detail' latest_client_plan.pk %}" class="btn btn-outline-primary btn-sm">Open plan</a>
+          {% endif %}
+        </div>
+
+        {% if latest_client_plan %}
+          <div class="plan-summary-meta">
+            <span class="plan-summary-pill">{{ latest_client_plan.duration_weeks }} week{{ latest_client_plan.duration_weeks|pluralize }}</span>
+            <span class="plan-summary-pill">
+              {% if latest_client_plan.requires_analysis %}
+                Live analysis required
+              {% else %}
+                Live analysis optional
+              {% endif %}
+            </span>
+            <span class="plan-summary-pill">Assigned {{ latest_client_plan.created_at|date:"Y-m-d" }}</span>
+          </div>
+
+          {% if latest_client_plan.description %}
+            <p class="cg-muted mb-3">{{ latest_client_plan.description }}</p>
+          {% endif %}
+
+          {% if latest_plan_items %}
+            <div class="plan-summary-list">
+              {% for item in latest_plan_items %}
+                <div class="plan-summary-row">
+                  <div>
+                    <strong>{{ item.exercise.name }}</strong>
+                    <div class="cg-meta">{{ item.exercise.body_area }} · {{ item.exercise.difficulty }}</div>
+                  </div>
+                  <div class="plan-summary-rx">{{ item.sets }} x {{ item.reps }}</div>
+                </div>
+              {% endfor %}
+            </div>
+            {% if latest_client_plan.plan_exercises.count > latest_plan_items|length %}
+              <div class="cg-meta mt-3">Open the full plan to see the remaining prescribed exercises.</div>
+            {% endif %}
+          {% else %}
+            <div class="cg-empty">This plan has not had its exercise prescription added yet.</div>
+          {% endif %}
+        {% else %}
+          <div class="cg-empty">No assigned plan to preview yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="client-section">
     <h2 class="dash-section-title h4">Get Started</h2>
     <div class="row g-4 client-actions mb-2">
       <div class="col-md-6 col-xl-4">
@@ -643,33 +762,6 @@
             <div class="dash-link">Start analysis</div>
           </div>
         </a>
-      </div>
-    </div>
-  </section>
-
-  <section class="client-section">
-    <h2 class="dash-section-title h4">How to Use CoreGuard</h2>
-    <div class="row g-4 client-steps">
-      <div class="col-md-4">
-        <div class="dash-step">
-          <div class="dash-step-number">1</div>
-          <h3 class="h5">Check your assigned plan</h3>
-          <p>Start by opening your rehab plan to see exercises, progress history, and analysis requirements.</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="dash-step">
-          <div class="dash-step-number">2</div>
-          <h3 class="h5">Log a session</h3>
-          <p>After completing your exercises, record a short update with your pain level and any notes.</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="dash-step">
-          <div class="dash-step-number">3</div>
-          <h3 class="h5">Review feedback</h3>
-          <p>When your physio sends comments, you can return to the analysis summary and read them there.</p>
-        </div>
       </div>
     </div>
   </section>

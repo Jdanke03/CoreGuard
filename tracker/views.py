@@ -134,13 +134,19 @@ def home(request):
             }),
         })
     else:
-        client_plans = Plan.objects.filter(user=request.user).order_by('-created_at')
+        client_plans = (
+            Plan.objects.filter(user=request.user)
+            .prefetch_related('plan_exercises__exercise')
+            .order_by('-created_at')
+        )
         client_logs = SessionLog.objects.filter(user=request.user)
         client_sessions = AnalysisSession.objects.filter(client=request.user).select_related('plan').order_by('-started_at')
         feedback_ready = client_sessions.filter(feedback_shared=True).count()
         pending_review = client_sessions.filter(feedback_shared=False).count()
         latest_feedback_session = client_sessions.filter(feedback_shared=True).first()
         latest_analysis_session = client_sessions.first()
+        latest_client_plan = client_plans.first()
+        latest_plan_items = list(latest_client_plan.plan_exercises.select_related('exercise').all()[:4]) if latest_client_plan else []
 
         context.update({
             'client_active_plans': client_plans.count(),
@@ -149,6 +155,8 @@ def home(request):
             'client_feedback_ready': feedback_ready,
             'latest_feedback_session': latest_feedback_session,
             'latest_analysis_session': latest_analysis_session,
+            'latest_client_plan': latest_client_plan,
+            'latest_plan_items': latest_plan_items,
             'client_next_action': (
                 'Open your latest feedback to review your physiotherapist’s comments.'
                 if latest_feedback_session else
