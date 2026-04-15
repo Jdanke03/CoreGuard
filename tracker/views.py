@@ -937,12 +937,17 @@ def analysis_sessions_physio(request):
     # Physio view: list analysis sessions for their clients
     client_ids = Plan.objects.filter(created_by=request.user).values_list('user_id', flat=True)
     client_id = request.GET.get('client')
+    status = request.GET.get('status')
 
     # Base queryset: sessions for any of this physio's clients
     sessions = AnalysisSession.objects.filter(client_id__in=client_ids).order_by('-started_at')
     if client_id:
         # Optional filter by selected client
         sessions = sessions.filter(client_id=client_id)
+    if status == 'pending':
+        sessions = sessions.filter(feedback_shared=False)
+    elif status == 'sent':
+        sessions = sessions.filter(feedback_shared=True)
 
     # Build the client filter dropdown
     clients = User.objects.filter(id__in=client_ids).order_by('username')
@@ -950,4 +955,5 @@ def analysis_sessions_physio(request):
         'sessions': sessions,
         'clients': clients,
         'selected_client_id': client_id or '',
+        'selected_status': status or '',
     })

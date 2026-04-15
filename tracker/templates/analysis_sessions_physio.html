@@ -26,6 +26,14 @@
         {% endfor %}
       </select>
     </div>
+    <div class="col-sm-6 col-md-4">
+      <label for="statusFilter" class="form-label fw-semibold">Filter by status</label>
+      <select id="statusFilter" name="status" class="form-select">
+        <option value="" {% if not selected_status %}selected{% endif %}>All sessions</option>
+        <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Awaiting review</option>
+        <option value="sent" {% if selected_status == 'sent' %}selected{% endif %}>Feedback sent</option>
+      </select>
+    </div>
     <div class="col-auto">
       <button type="submit" class="btn btn-outline-primary">Filter</button>
     </div>

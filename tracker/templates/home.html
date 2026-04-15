@@ -213,6 +213,18 @@
     height: 100%;
   }
 
+  a.dash-metric {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  a.dash-metric:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 46px rgba(14, 42, 71, 0.12);
+  }
+
   .dash-metric-label {
     color: #6a8092;
     font-size: 0.82rem;
@@ -404,32 +416,32 @@
 {% if is_physio %}
   <div class="row g-4 mb-4">
     <div class="col-md-6 col-xl-3">
-      <div class="dash-metric">
+      <a href="{% url 'plan_list' %}" class="dash-metric">
         <div class="dash-metric-label">Clients</div>
         <div class="dash-metric-value">{{ physio_total_clients }}</div>
         <div class="cg-muted">Distinct clients assigned to your plans.</div>
-      </div>
+      </a>
     </div>
     <div class="col-md-6 col-xl-3">
-      <div class="dash-metric">
+      <a href="{% url 'plan_list' %}" class="dash-metric">
         <div class="dash-metric-label">Active Plans</div>
         <div class="dash-metric-value">{{ physio_active_plans }}</div>
         <div class="cg-muted">Current rehabilitation plans you have created.</div>
-      </div>
+      </a>
     </div>
     <div class="col-md-6 col-xl-3">
-      <div class="dash-metric">
+      <a href="{% url 'analysis_sessions_physio' %}?status=pending" class="dash-metric">
         <div class="dash-metric-label">Awaiting Review</div>
         <div class="dash-metric-value">{{ physio_awaiting_review }}</div>
         <div class="cg-muted">Submitted sessions that still need feedback.</div>
-      </div>
+      </a>
     </div>
     <div class="col-md-6 col-xl-3">
-      <div class="dash-metric">
+      <a href="{% url 'analysis_sessions_physio' %}?status=sent" class="dash-metric">
         <div class="dash-metric-label">Feedback Sent</div>
         <div class="dash-metric-value">{{ physio_feedback_sent }}</div>
         <div class="cg-muted">Analysis sessions already shared with clients.</div>
-      </div>
+      </a>
     </div>
   </div>
 
@@ -547,31 +559,6 @@
           <div class="dash-link">Create plan</div>
         </div>
       </a>
-    </div>
-  </div>
-
-  <h2 class="dash-section-title h4">Typical Workflow</h2>
-  <div class="row g-4">
-    <div class="col-md-4">
-      <div class="dash-step">
-        <div class="dash-step-number">1</div>
-        <h3 class="h5">Assign a plan</h3>
-        <p>Create a plan for a client and mark live analysis as required when needed.</p>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="dash-step">
-        <div class="dash-step-number">2</div>
-        <h3 class="h5">Review the summary</h3>
-        <p>Open the linked session to inspect frame counts, rule breaches, and stored session data.</p>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="dash-step">
-        <div class="dash-step-number">3</div>
-        <h3 class="h5">Share final feedback</h3>
-        <p>Edit your comments, send them to the client, and keep the feedback attached to the session.</p>
-      </div>
     </div>
   </div>
 
