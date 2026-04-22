@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.db.models import Count, Q
 import os
+import time
 import urllib.request
 import urllib.error
 import json
@@ -523,9 +524,21 @@ def analysis_stream(request, session_id):
         return HttpResponse("MediaPipe or OpenCV not installed.", status=503)
 
     # Open the webcam
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
     if not cap.isOpened():
         return HttpResponse("Camera not available.", status=503)
+
+    # Continuity Camera can take a moment to start returning frames on macOS.
+    initial_frame = None
+    for _ in range(20):
+        success, frame = cap.read()
+        if success and frame is not None:
+            initial_frame = frame
+            break
+        time.sleep(0.15)
+    if initial_frame is None:
+        cap.release()
+        return HttpResponse("Camera stream did not start.", status=503)
 
     # Initialize pose pipeline + drawing helpers
     mp_pose = mp.solutions.pose
@@ -563,6 +576,8 @@ def analysis_stream(request, session_id):
     # Generator yields frames for StreamingHttpResponse
     def frame_generator():
         frame_tick = 0
+        pending_frame = initial_frame
+        read_failures = 0
         try:
             with mp_pose.Pose(
                 static_image_mode=False,
@@ -570,9 +585,19 @@ def analysis_stream(request, session_id):
                 min_tracking_confidence=0.5
             ) as pose:
                 while True:
-                    success, frame = cap.read()
+                    if pending_frame is not None:
+                        frame = pending_frame
+                        pending_frame = None
+                        success = True
+                    else:
+                        success, frame = cap.read()
                     if not success:
-                        break
+                        read_failures += 1
+                        if read_failures >= 15:
+                            break
+                        time.sleep(0.1)
+                        continue
+                    read_failures = 0
 
                     nonlocal total_frames, flagged_frames
                     # Update counters on every frame
