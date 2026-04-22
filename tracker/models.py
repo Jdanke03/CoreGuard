@@ -6,9 +6,15 @@ class Exercise(models.Model):
     # Simple library of exercises used in plans
     BODY_AREAS = [
         ('Legs', 'Legs'),
+        ('Knee', 'Knee'),
+        ('Hips', 'Hips'),
         ('Shoulder', 'Shoulder'),
+        ('Arms', 'Arms'),
+        ('Chest', 'Chest'),
         ('Back', 'Back'),
+        ('Core', 'Core'),
         ('Neck', 'Neck'),
+        ('Ankle', 'Ankle'),
         ('Other', 'Other'),
     ]
 
@@ -24,6 +30,7 @@ class Exercise(models.Model):
     body_area = models.CharField(max_length=20, choices=BODY_AREAS)
     difficulty = models.CharField(max_length=10, choices=DIFFICULTIES)
     image = models.ImageField(upload_to='exercises/', blank=True, null=True)
+    video_url = models.URLField(blank=True, default='')
 
 
     def __str__(self):
