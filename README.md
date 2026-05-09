@@ -28,11 +28,14 @@ Current API endpoints:
 - `/api/auth/logout/` - deletes the current user's API token
 - `/api/me/` - returns the current user's profile and role, and supports email updates with `PATCH`
 - `/api/dashboard/` - returns role-specific dashboard metrics and latest activity
-- `/api/exercises/`
-- `/api/plans/`
+- `/api/exercises/` - read the exercise library; physiotherapists can create exercises with image uploads
+- `/api/clients/` - lists clients assigned to the logged-in physiotherapist
+- `/api/plans/` - read plans; physiotherapists can create structured plans with exercise prescriptions
 - `/api/plan-exercises/`
 - `/api/logs/` - clients can also create their own progress logs with `POST`
-- `/api/analysis-sessions/`
+- `/api/analysis-sessions/` - includes parsed summary metrics for app-friendly display
+- `/api/analysis-sessions/{id}/generate-draft/` - physiotherapists can generate an AI feedback draft
+- `/api/analysis-sessions/{id}/send-feedback/` - physiotherapists can share final feedback and trigger email delivery
 
 API responses are filtered by the logged-in user. Clients only see their own plans, logs, and analysis sessions. Physiotherapists see records connected to plans they created. Token authentication is available for future mobile and standalone frontend clients.
 

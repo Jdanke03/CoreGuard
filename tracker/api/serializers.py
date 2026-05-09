@@ -1,5 +1,6 @@
-from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.db import transaction
+from rest_framework import serializers
 
 from tracker.models import AnalysisSession, Exercise, Plan, PlanExercise, SessionLog
 from tracker.services.roles import is_physio
@@ -28,12 +29,38 @@ class ExerciseSerializer(serializers.ModelSerializer):
         return request.build_absolute_uri(url) if request else url
 
 
+class ExerciseCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exercise
+        fields = [
+            "id",
+            "name",
+            "description",
+            "body_area",
+            "difficulty",
+            "image",
+            "video_url",
+        ]
+        read_only_fields = ["id"]
+
+    def validate(self, attrs):
+        if not is_physio(self.context["request"].user):
+            raise serializers.ValidationError("Only physiotherapists can create exercises.")
+        return attrs
+
+
 class PlanExerciseSerializer(serializers.ModelSerializer):
     exercise = ExerciseSerializer(read_only=True)
 
     class Meta:
         model = PlanExercise
         fields = ["id", "plan", "exercise", "sets", "reps", "order"]
+
+
+class PlanPrescriptionCreateSerializer(serializers.Serializer):
+    exercise = serializers.PrimaryKeyRelatedField(queryset=Exercise.objects.all())
+    sets = serializers.IntegerField(min_value=1, max_value=20, default=3)
+    reps = serializers.IntegerField(min_value=1, max_value=100, default=10)
 
 
 class PlanSerializer(serializers.ModelSerializer):
@@ -54,6 +81,68 @@ class PlanSerializer(serializers.ModelSerializer):
             "created_by_username",
             "prescriptions",
         ]
+
+
+class PlanCreateSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    prescriptions = PlanPrescriptionCreateSerializer(many=True, write_only=True)
+
+    class Meta:
+        model = Plan
+        fields = [
+            "id",
+            "user",
+            "name",
+            "description",
+            "duration_weeks",
+            "requires_analysis",
+            "prescriptions",
+        ]
+        read_only_fields = ["id"]
+
+    def validate(self, attrs):
+        request_user = self.context["request"].user
+        prescriptions = attrs.get("prescriptions", [])
+
+        if not is_physio(request_user):
+            raise serializers.ValidationError("Only physiotherapists can create plans.")
+
+        if is_physio(attrs["user"]):
+            raise serializers.ValidationError("Plans must be assigned to a client account.")
+
+        if not 1 <= attrs.get("duration_weeks", 6) <= 12:
+            raise serializers.ValidationError({"duration_weeks": "Duration must be between 1 and 12 weeks."})
+
+        if not prescriptions:
+            raise serializers.ValidationError({"prescriptions": "At least one exercise prescription is required."})
+
+        exercise_ids = [item["exercise"].id for item in prescriptions]
+        if len(exercise_ids) != len(set(exercise_ids)):
+            raise serializers.ValidationError({"prescriptions": "Each exercise can only appear once per plan."})
+
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        prescriptions = validated_data.pop("prescriptions")
+        plan = Plan.objects.create(
+            created_by=self.context["request"].user,
+            **validated_data,
+        )
+        exercises = [item["exercise"] for item in prescriptions]
+        plan.exercises.set(exercises)
+
+        PlanExercise.objects.bulk_create([
+            PlanExercise(
+                plan=plan,
+                exercise=item["exercise"],
+                sets=item["sets"],
+                reps=item["reps"],
+                order=index,
+            )
+            for index, item in enumerate(prescriptions)
+        ])
+        return plan
 
 
 class SessionLogSerializer(serializers.ModelSerializer):
@@ -102,6 +191,7 @@ class SessionLogCreateSerializer(serializers.ModelSerializer):
 class AnalysisSessionSerializer(serializers.ModelSerializer):
     client_username = serializers.CharField(source="client.username", read_only=True)
     plan_name = serializers.CharField(source="plan.name", read_only=True)
+    summary_metrics = serializers.SerializerMethodField()
 
     class Meta:
         model = AnalysisSession
@@ -116,11 +206,79 @@ class AnalysisSessionSerializer(serializers.ModelSerializer):
             "total_frames",
             "flagged_frames",
             "summary_json",
+            "summary_metrics",
             "physio_feedback_draft",
             "physio_feedback",
             "feedback_shared",
             "feedback_at",
         ]
+
+    def get_summary_metrics(self, obj):
+        import json
+
+        if not obj.summary_json:
+            return {
+                "rules": {},
+                "angles": {},
+                "total_frames": obj.total_frames,
+                "flagged_frames": obj.flagged_frames,
+            }
+
+        try:
+            summary = json.loads(obj.summary_json)
+        except (TypeError, ValueError):
+            return {
+                "rules": {},
+                "angles": {},
+                "total_frames": obj.total_frames,
+                "flagged_frames": obj.flagged_frames,
+            }
+
+        return {
+            "rules": summary.get("rules", {}),
+            "angles": summary.get("angles", {}),
+            "total_frames": summary.get("total_frames", obj.total_frames),
+            "flagged_frames": summary.get("flagged_frames", obj.flagged_frames),
+        }
+
+
+class FeedbackSendSerializer(serializers.Serializer):
+    physio_feedback = serializers.CharField(trim_whitespace=True)
+
+    def validate_physio_feedback(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Feedback cannot be empty.")
+        return value
+
+
+class ClientSummarySerializer(serializers.ModelSerializer):
+    active_plans = serializers.SerializerMethodField()
+    awaiting_review = serializers.SerializerMethodField()
+    feedback_sent = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "active_plans", "awaiting_review", "feedback_sent"]
+
+    def _plans_for_client(self, client):
+        return Plan.objects.filter(created_by=self.context["request"].user, user=client)
+
+    def get_active_plans(self, client):
+        return self._plans_for_client(client).count()
+
+    def get_awaiting_review(self, client):
+        return AnalysisSession.objects.filter(
+            plan__created_by=self.context["request"].user,
+            client=client,
+            feedback_shared=False,
+        ).count()
+
+    def get_feedback_sent(self, client):
+        return AnalysisSession.objects.filter(
+            plan__created_by=self.context["request"].user,
+            client=client,
+            feedback_shared=True,
+        ).count()
 
 
 class UserSerializer(serializers.Serializer):

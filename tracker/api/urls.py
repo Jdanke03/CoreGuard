@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from tracker.api.views import (
     AnalysisSessionViewSet,
+    ClientViewSet,
     ExerciseViewSet,
     PlanExerciseViewSet,
     PlanViewSet,
@@ -15,6 +16,7 @@ from tracker.api.views import (
 
 router = DefaultRouter()
 router.register("exercises", ExerciseViewSet, basename="api-exercise")
+router.register("clients", ClientViewSet, basename="api-client")
 router.register("plans", PlanViewSet, basename="api-plan")
 router.register("plan-exercises", PlanExerciseViewSet, basename="api-plan-exercise")
 router.register("logs", SessionLogViewSet, basename="api-log")

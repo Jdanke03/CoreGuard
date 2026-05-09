@@ -1,16 +1,29 @@
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 from rest_framework import mixins, viewsets
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from tracker.api.serializers import (
     AnalysisSessionSerializer,
+    ClientSummarySerializer,
+    ExerciseCreateSerializer,
     ExerciseSerializer,
+    FeedbackSendSerializer,
+    PlanCreateSerializer,
     PlanExerciseSerializer,
     PlanSerializer,
     SessionLogCreateSerializer,
     SessionLogSerializer,
 )
 from tracker.models import AnalysisSession, Exercise, Plan, PlanExercise, SessionLog
+from tracker.services.feedback import generate_ai_draft, send_feedback_email
 from tracker.services.roles import is_physio
 
 
@@ -18,13 +31,33 @@ class AuthenticatedReadOnlyViewSet(ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-class ExerciseViewSet(AuthenticatedReadOnlyViewSet):
-    serializer_class = ExerciseSerializer
+class ExerciseViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [IsAuthenticated]
     queryset = Exercise.objects.order_by("name")
 
+    def get_serializer_class(self):
+        if self.action == "create":
+            return ExerciseCreateSerializer
+        return ExerciseSerializer
 
-class PlanViewSet(AuthenticatedReadOnlyViewSet):
-    serializer_class = PlanSerializer
+
+class PlanViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return PlanCreateSerializer
+        return PlanSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -76,11 +109,50 @@ class AnalysisSessionViewSet(AuthenticatedReadOnlyViewSet):
             return queryset.filter(plan__created_by=user).order_by("-started_at")
         return queryset.filter(client=user).order_by("-started_at")
 
-from django.contrib.auth import authenticate
-from rest_framework import status
-from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
+    def _get_physio_session(self):
+        session = self.get_object()
+        if not is_physio(self.request.user) or not session.plan or session.plan.created_by_id != self.request.user.id:
+            raise PermissionDenied("Only the assigned physiotherapist can manage analysis feedback.")
+        return session
+
+    @action(detail=True, methods=["post"], url_path="generate-draft")
+    def generate_draft(self, request, pk=None):
+        session = self._get_physio_session()
+        draft = generate_ai_draft(session)
+        session.physio_feedback_draft = draft
+        if not session.physio_feedback:
+            session.physio_feedback = draft
+        session.save(update_fields=["physio_feedback_draft", "physio_feedback"])
+        return Response(AnalysisSessionSerializer(session, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"], url_path="send-feedback")
+    def send_feedback(self, request, pk=None):
+        from django.utils import timezone
+
+        session = self._get_physio_session()
+        serializer = FeedbackSendSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        session.physio_feedback = serializer.validated_data["physio_feedback"]
+        session.feedback_shared = True
+        session.feedback_at = timezone.now()
+        session.save(update_fields=["physio_feedback", "feedback_shared", "feedback_at"])
+        email_sent = send_feedback_email(session)
+
+        data = AnalysisSessionSerializer(session, context={"request": request}).data
+        data["email_sent"] = email_sent
+        return Response(data)
+
+
+class ClientViewSet(AuthenticatedReadOnlyViewSet):
+    serializer_class = ClientSummarySerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if not is_physio(user):
+            return User.objects.none()
+        client_ids = Plan.objects.filter(created_by=user).values_list("user_id", flat=True).distinct()
+        return User.objects.filter(id__in=client_ids).order_by("username")
 
 from tracker.api.serializers import UserSerializer, UserUpdateSerializer
 

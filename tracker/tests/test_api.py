@@ -1,6 +1,8 @@
 from django.contrib.auth.models import Group, User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
+from unittest.mock import patch
 
 from tracker.models import AnalysisSession, Exercise, Plan, PlanExercise, SessionLog
 
@@ -165,6 +167,158 @@ class ApiRouteTests(TestCase):
         self.assertEqual(payload["metrics"]["feedback_sent"], 0)
         self.assertEqual(len(payload["recent_sessions"]), 1)
         self.assertEqual(len(payload["clients_needing_attention"]), 1)
+
+    def test_physio_can_create_plan_with_prescriptions(self):
+        self.client.login(username="physio", password="testpass")
+
+        response = self.client.post(
+            "/api/plans/",
+            {
+                "user": self.client_user.id,
+                "name": "Shoulder Rehab",
+                "description": "Build control and strength.",
+                "duration_weeks": 8,
+                "requires_analysis": False,
+                "prescriptions": [
+                    {"exercise": self.exercise.id, "sets": 4, "reps": 12},
+                ],
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        plan = Plan.objects.get(name="Shoulder Rehab")
+        self.assertEqual(plan.created_by, self.physio)
+        self.assertEqual(plan.user, self.client_user)
+        prescription = plan.plan_exercises.get()
+        self.assertEqual(prescription.sets, 4)
+        self.assertEqual(prescription.reps, 12)
+
+    def test_client_cannot_create_plan(self):
+        self.client.login(username="client", password="testpass")
+
+        response = self.client.post(
+            "/api/plans/",
+            {
+                "user": self.client_user.id,
+                "name": "Client Plan Attempt",
+                "description": "Should not work.",
+                "duration_weeks": 4,
+                "requires_analysis": False,
+                "prescriptions": [
+                    {"exercise": self.exercise.id, "sets": 3, "reps": 10},
+                ],
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(Plan.objects.filter(name="Client Plan Attempt").exists())
+
+    def test_physio_can_list_assigned_clients(self):
+        self.client.login(username="physio", password="testpass")
+
+        response = self.client.get("/api/clients/")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(len(payload), 1)
+        self.assertEqual(payload[0]["username"], "client")
+        self.assertEqual(payload[0]["active_plans"], 1)
+        self.assertEqual(payload[0]["awaiting_review"], 1)
+
+    def test_client_clients_endpoint_is_empty(self):
+        self.client.login(username="client", password="testpass")
+
+        response = self.client.get("/api/clients/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), [])
+
+    def test_analysis_api_returns_clean_summary_metrics(self):
+        self.client.login(username="client", password="testpass")
+        session = AnalysisSession.objects.get(client=self.client_user)
+        session.total_frames = 120
+        session.flagged_frames = 18
+        session.summary_json = (
+            '{"rules": {"knee_valgus": 4, "shallow_depth": 10, "forward_lean": 4}, '
+            '"angles": {"knee_avg": 94.5, "hip_avg": 68.2}, '
+            '"total_frames": 120, "flagged_frames": 18}'
+        )
+        session.save()
+
+        response = self.client.get("/api/analysis-sessions/")
+
+        self.assertEqual(response.status_code, 200)
+        metrics = response.json()[0]["summary_metrics"]
+        self.assertEqual(metrics["rules"]["shallow_depth"], 10)
+        self.assertEqual(metrics["angles"]["knee_avg"], 94.5)
+        self.assertEqual(metrics["total_frames"], 120)
+
+    @patch("tracker.api.views.generate_ai_draft", return_value="Keep your knees aligned and slow the movement slightly.")
+    def test_physio_can_generate_feedback_draft(self, mocked_generate):
+        self.client.login(username="physio", password="testpass")
+        session = AnalysisSession.objects.get(client=self.client_user)
+
+        response = self.client.post(f"/api/analysis-sessions/{session.id}/generate-draft/")
+
+        self.assertEqual(response.status_code, 200)
+        session.refresh_from_db()
+        self.assertEqual(session.physio_feedback_draft, "Keep your knees aligned and slow the movement slightly.")
+        self.assertEqual(response.json()["physio_feedback"], "Keep your knees aligned and slow the movement slightly.")
+        mocked_generate.assert_called_once_with(session)
+
+    @patch("tracker.api.views.send_feedback_email", return_value=True)
+    def test_physio_can_send_final_feedback(self, mocked_email):
+        self.client.login(username="physio", password="testpass")
+        session = AnalysisSession.objects.get(client=self.client_user)
+
+        response = self.client.post(
+            f"/api/analysis-sessions/{session.id}/send-feedback/",
+            {"physio_feedback": "Good effort. Work on keeping your hips lower."},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        session.refresh_from_db()
+        self.assertTrue(session.feedback_shared)
+        self.assertEqual(session.physio_feedback, "Good effort. Work on keeping your hips lower.")
+        self.assertTrue(response.json()["email_sent"])
+        mocked_email.assert_called_once_with(session)
+
+    def test_physio_can_create_exercise_with_image(self):
+        self.client.login(username="physio", password="testpass")
+        image = SimpleUploadedFile(
+            "exercise.gif",
+            b"GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00\xff\xff\xff,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;",
+            content_type="image/gif",
+        )
+
+        response = self.client.post("/api/exercises/", {
+            "name": "Wall Sit",
+            "description": "Hold a controlled seated position against a wall.",
+            "body_area": "Legs",
+            "difficulty": "Medium",
+            "image": image,
+            "video_url": "",
+        })
+
+        self.assertEqual(response.status_code, 201)
+        exercise = Exercise.objects.get(name="Wall Sit")
+        self.assertTrue(exercise.image.name.startswith("exercises/"))
+
+    def test_client_cannot_create_exercise(self):
+        self.client.login(username="client", password="testpass")
+
+        response = self.client.post("/api/exercises/", {
+            "name": "Client Exercise Attempt",
+            "description": "Should not work.",
+            "body_area": "Legs",
+            "difficulty": "Easy",
+            "video_url": "",
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(Exercise.objects.filter(name="Client Exercise Attempt").exists())
 
 
 class ApiAuthTests(TestCase):
