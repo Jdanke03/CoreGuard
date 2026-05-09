@@ -255,7 +255,7 @@ class ApiRouteTests(TestCase):
         self.assertEqual(metrics["angles"]["knee_avg"], 94.5)
         self.assertEqual(metrics["total_frames"], 120)
 
-    @patch("tracker.api.views.generate_ai_draft", return_value="Keep your knees aligned and slow the movement slightly.")
+    @patch("tracker.api.analysis.generate_ai_draft", return_value="Keep your knees aligned and slow the movement slightly.")
     def test_physio_can_generate_feedback_draft(self, mocked_generate):
         self.client.login(username="physio", password="testpass")
         session = AnalysisSession.objects.get(client=self.client_user)
@@ -268,7 +268,7 @@ class ApiRouteTests(TestCase):
         self.assertEqual(response.json()["physio_feedback"], "Keep your knees aligned and slow the movement slightly.")
         mocked_generate.assert_called_once_with(session)
 
-    @patch("tracker.api.views.send_feedback_email", return_value=True)
+    @patch("tracker.api.analysis.send_feedback_email", return_value=True)
     def test_physio_can_send_final_feedback(self, mocked_email):
         self.client.login(username="physio", password="testpass")
         session = AnalysisSession.objects.get(client=self.client_user)
