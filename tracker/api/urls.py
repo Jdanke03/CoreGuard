@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from tracker.api.analysis import AnalysisSessionViewSet
+from tracker.api.actions import action_queue_view
 from tracker.api.auth import login_view, logout_view, me_view
 from tracker.api.clients import ClientViewSet
 from tracker.api.dashboard import dashboard_view
@@ -21,5 +22,6 @@ urlpatterns = [
     path("auth/login/", login_view, name="api-login"),
     path("auth/logout/", logout_view, name="api-logout"),
     path("dashboard/", dashboard_view, name="api-dashboard"),
+    path("actions/", action_queue_view, name="api-actions"),
     path("me/", me_view, name="api-me"),
 ] + router.urls

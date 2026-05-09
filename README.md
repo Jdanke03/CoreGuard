@@ -30,6 +30,7 @@ Current API endpoints:
 - `/api/auth/logout/` - deletes the current user's API token
 - `/api/me/` - returns the current user's profile and role, and supports email updates with `PATCH`
 - `/api/dashboard/` - returns role-specific dashboard metrics and latest activity
+- `/api/actions/` - returns a role-specific action queue for next best client or physiotherapist tasks
 - `/api/exercises/` - read the exercise library; physiotherapists can create exercises with image uploads
 - `/api/clients/` - lists clients assigned to the logged-in physiotherapist
 - `/api/plans/` - read plans; physiotherapists can create structured plans with exercise prescriptions
