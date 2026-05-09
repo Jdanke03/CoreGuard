@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from . import views_exercises
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -13,10 +14,10 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
 
     # Exercises
-    path('exercises/', views.exercise_list, name='exercise_list'),
-    path('exercises/<int:pk>/', views.exercise_detail, name='exercise_detail'),
-    path('exercises/new/', views.exercise_create, name='exercise_create'),
-    path('exercises/<int:pk>/delete/', views.exercise_delete, name='exercise_delete'),
+    path('exercises/', views_exercises.exercise_list, name='exercise_list'),
+    path('exercises/<int:pk>/', views_exercises.exercise_detail, name='exercise_detail'),
+    path('exercises/new/', views_exercises.exercise_create, name='exercise_create'),
+    path('exercises/<int:pk>/delete/', views_exercises.exercise_delete, name='exercise_delete'),
 
     # Plans
     path('plans/', views.plan_list, name='plan_list'),

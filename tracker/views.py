@@ -6,11 +6,10 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import StreamingHttpResponse, HttpResponse
-from django.db.models import Q
 import time
 import json
-from .models import Exercise, Plan, SessionLog, AnalysisSession
-from .forms import UserSignupForm, PlanForm, SessionLogForm, ExerciseForm, AnalysisFeedbackForm, ProfileEmailForm
+from .models import Plan, SessionLog, AnalysisSession
+from .forms import UserSignupForm, PlanForm, SessionLogForm, AnalysisFeedbackForm, ProfileEmailForm
 from .services.feedback import generate_ai_draft, send_feedback_email
 from .services.analysis import build_summary, create_analysis_state, extract_squat_points, update_squat_analysis_state
 from .services.plans import build_exercise_prescription_rows, save_plan_prescriptions
@@ -75,61 +74,6 @@ def profile_view(request):
         'role': role,
     })
 
-# Exercises (physio/admin only for create/delete)
-@login_required
-@user_passes_test(lambda u: u.is_staff or is_physio(u))
-def exercise_create(request):
-    # Create a new exercise in the library
-    if request.method == "POST":
-        form = ExerciseForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('exercise_list')
-    else:
-        # GET: blank form
-        form = ExerciseForm()
-
-    return render(request, 'exercise_form.html', {'form': form})
-
-
-
-@login_required
-def exercise_list(request):
-    # List all exercises for everyone
-    exercises = Exercise.objects.all()
-
-    # Only physios/admins can add new exercises
-    can_add_exercise = (
-        request.user.is_authenticated and
-        (request.user.is_staff or is_physio(request.user))
-    )
-
-    # Pass a flag so the template can show/hide the add button
-    return render(request, 'exercise_list.html', {
-        'exercises': exercises,
-        'can_add_exercise': can_add_exercise,
-    })
-
-def exercise_detail(request, pk):
-    # Show details for a single exercise
-    exercise = get_object_or_404(Exercise, pk=pk)
-    return render(request, 'exercise_detail.html', {
-        'exercise': exercise,
-        # Used to hide controls for clients
-        'is_physio': is_physio(request.user),
-    })
-
-
-@login_required
-@user_passes_test(lambda u: u.is_staff or is_physio(u))
-def exercise_delete(request, pk):
-    # Confirm + delete an exercise
-    exercise = get_object_or_404(Exercise, pk=pk)
-    if request.method == "POST":
-        exercise.delete()
-        return redirect('exercise_list')
-    # GET: confirm screen
-    return render(request, 'exercise_confirm_delete.html', {'exercise': exercise})
 
 
 # Plans (list, detail, create, edit, delete)
