@@ -7,6 +7,7 @@ from tracker.api.views import (
     PlanExerciseViewSet,
     PlanViewSet,
     SessionLogViewSet,
+    dashboard_view,
     login_view,
     logout_view,
     me_view,
@@ -22,5 +23,6 @@ router.register("analysis-sessions", AnalysisSessionViewSet, basename="api-analy
 urlpatterns = [
     path("auth/login/", login_view, name="api-login"),
     path("auth/logout/", logout_view, name="api-logout"),
+    path("dashboard/", dashboard_view, name="api-dashboard"),
     path("me/", me_view, name="api-me"),
 ] + router.urls

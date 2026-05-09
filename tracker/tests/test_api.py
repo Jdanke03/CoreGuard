@@ -129,6 +129,43 @@ class ApiRouteTests(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
+    def test_client_dashboard_returns_home_screen_summary(self):
+        self.client.login(username="client", password="testpass")
+        AnalysisSession.objects.create(
+            client=self.client_user,
+            plan=self.plan,
+            exercise_name="Squat",
+            feedback_shared=True,
+            physio_feedback="Keep focusing on controlled depth.",
+        )
+
+        response = self.client.get("/api/dashboard/")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["role"], "client")
+        self.assertEqual(payload["metrics"]["active_plans"], 1)
+        self.assertEqual(payload["metrics"]["sessions_logged"], 1)
+        self.assertEqual(payload["metrics"]["analyses_completed"], 2)
+        self.assertEqual(payload["metrics"]["feedback_ready"], 1)
+        self.assertEqual(payload["latest_plan"]["name"], "Knee Rehab")
+        self.assertEqual(payload["latest_feedback"]["physio_feedback"], "Keep focusing on controlled depth.")
+
+    def test_physio_dashboard_returns_review_summary(self):
+        self.client.login(username="physio", password="testpass")
+
+        response = self.client.get("/api/dashboard/")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["role"], "physio")
+        self.assertEqual(payload["metrics"]["clients"], 1)
+        self.assertEqual(payload["metrics"]["active_plans"], 1)
+        self.assertEqual(payload["metrics"]["awaiting_review"], 1)
+        self.assertEqual(payload["metrics"]["feedback_sent"], 0)
+        self.assertEqual(len(payload["recent_sessions"]), 1)
+        self.assertEqual(len(payload["clients_needing_attention"]), 1)
+
 
 class ApiAuthTests(TestCase):
     def setUp(self):
