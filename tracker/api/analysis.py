@@ -14,6 +14,9 @@ class AnalysisSessionViewSet(AuthenticatedReadOnlyViewSet):
     serializer_class = AnalysisSessionSerializer
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return AnalysisSession.objects.none()
+
         user = self.request.user
         queryset = AnalysisSession.objects.select_related("client", "plan", "plan__created_by")
         if is_physio(user):

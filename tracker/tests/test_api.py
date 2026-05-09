@@ -43,6 +43,14 @@ class ApiRouteTests(TestCase):
         response = self.client.get("/api/exercises/")
         self.assertIn(response.status_code, [403, 401])
 
+    def test_openapi_schema_and_docs_are_available(self):
+        schema_response = self.client.get("/api/schema/")
+        docs_response = self.client.get("/api/docs/")
+
+        self.assertEqual(schema_response.status_code, 200)
+        self.assertEqual(docs_response.status_code, 200)
+        self.assertIn("CoreGuard API", schema_response.content.decode())
+
     def test_client_only_sees_their_own_plans(self):
         self.client.login(username="client", password="testpass")
 

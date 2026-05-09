@@ -21,6 +21,9 @@ class PlanViewSet(
         return PlanSerializer
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Plan.objects.none()
+
         user = self.request.user
         queryset = Plan.objects.prefetch_related("plan_exercises__exercise").select_related("user", "created_by")
         if is_physio(user):
@@ -32,6 +35,9 @@ class PlanExerciseViewSet(AuthenticatedReadOnlyViewSet):
     serializer_class = PlanExerciseSerializer
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return PlanExercise.objects.none()
+
         user = self.request.user
         queryset = PlanExercise.objects.select_related("plan", "exercise", "plan__user", "plan__created_by")
         if is_physio(user):

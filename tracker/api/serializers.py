@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import transaction
 from rest_framework import serializers
+from drf_spectacular.utils import OpenApiTypes, extend_schema_field
 
 from tracker.models import AnalysisSession, Exercise, Plan, PlanExercise, SessionLog
 from tracker.services.roles import is_physio
@@ -21,6 +22,7 @@ class ExerciseSerializer(serializers.ModelSerializer):
             "video_url",
         ]
 
+    @extend_schema_field(OpenApiTypes.URI)
     def get_image_url(self, obj):
         request = self.context.get("request")
         if not obj.image:
@@ -213,6 +215,7 @@ class AnalysisSessionSerializer(serializers.ModelSerializer):
             "feedback_at",
         ]
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_summary_metrics(self, obj):
         import json
 
@@ -263,9 +266,11 @@ class ClientSummarySerializer(serializers.ModelSerializer):
     def _plans_for_client(self, client):
         return Plan.objects.filter(created_by=self.context["request"].user, user=client)
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_active_plans(self, client):
         return self._plans_for_client(client).count()
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_awaiting_review(self, client):
         return AnalysisSession.objects.filter(
             plan__created_by=self.context["request"].user,
@@ -273,6 +278,7 @@ class ClientSummarySerializer(serializers.ModelSerializer):
             feedback_shared=False,
         ).count()
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_feedback_sent(self, client):
         return AnalysisSession.objects.filter(
             plan__created_by=self.context["request"].user,
@@ -287,6 +293,7 @@ class UserSerializer(serializers.Serializer):
     email = serializers.EmailField(read_only=True)
     role = serializers.SerializerMethodField()
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_role(self, user):
         from tracker.services.roles import is_physio
 

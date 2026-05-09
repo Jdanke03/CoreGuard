@@ -1,11 +1,13 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from drf_spectacular.utils import OpenApiTypes, extend_schema
 
 from tracker.api.serializers import AnalysisSessionSerializer, PlanSerializer
 from tracker.models import AnalysisSession, Plan, SessionLog
 from tracker.services.roles import is_physio
 
 
+@extend_schema(responses={200: OpenApiTypes.OBJECT})
 @api_view(["GET"])
 def dashboard_view(request):
     user = request.user

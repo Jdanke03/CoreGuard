@@ -20,6 +20,9 @@ class SessionLogViewSet(
         return SessionLogSerializer
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return SessionLog.objects.none()
+
         user = self.request.user
         queryset = SessionLog.objects.select_related("user", "plan", "plan__created_by")
         if is_physio(user):

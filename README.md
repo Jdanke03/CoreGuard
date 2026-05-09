@@ -24,6 +24,8 @@ CoreGuard now includes an authenticated API under `/api/`. This is intended as t
 
 Current API endpoints:
 
+- `/api/docs/` - interactive Swagger API documentation
+- `/api/schema/` - OpenAPI schema
 - `/api/auth/login/` - returns an API token for valid credentials
 - `/api/auth/logout/` - deletes the current user's API token
 - `/api/me/` - returns the current user's profile and role, and supports email updates with `PATCH`
