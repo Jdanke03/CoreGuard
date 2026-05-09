@@ -60,6 +60,7 @@ Then fill in the values you need:
 SECRET_KEY=change-me-for-production
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
+DATABASE_URL=
 OPENAI_API_KEY=your_openai_api_key
 GMAIL_USER=your_gmail_address
 GMAIL_APP_PASSWORD=your_gmail_app_password
@@ -79,6 +80,7 @@ The app uses local media files and a local SQLite database during development. T
 
 - `.env` stores local secrets and should stay untracked.
 - `.env.example` documents the required variables without exposing real credentials.
+- `DATABASE_URL` is optional locally. Leave it blank to use SQLite, or set a PostgreSQL URL for deployment.
 - `OPENAI_API_KEY` powers AI-assisted feedback drafts.
 - `GMAIL_USER` and `GMAIL_APP_PASSWORD` power SMTP email delivery.
 - `DEBUG` and `ALLOWED_HOSTS` can be changed when preparing for deployment.
