@@ -31,9 +31,18 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the planned technical direction.
 
 ## Local Development
 
-Create a local `.env` file in the project root:
+Create a local `.env` file in the project root. The easiest way is to copy the example file:
+
+```bash
+cp .env.example .env
+```
+
+Then fill in the values you need:
 
 ```env
+SECRET_KEY=change-me-for-production
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1,localhost
 OPENAI_API_KEY=your_openai_api_key
 GMAIL_USER=your_gmail_address
 GMAIL_APP_PASSWORD=your_gmail_app_password
@@ -49,3 +58,10 @@ python3 manage.py runserver
 
 The app uses local media files and a local SQLite database during development. These are intentionally not committed.
 
+## Environment Notes
+
+- `.env` stores local secrets and should stay untracked.
+- `.env.example` documents the required variables without exposing real credentials.
+- `OPENAI_API_KEY` powers AI-assisted feedback drafts.
+- `GMAIL_USER` and `GMAIL_APP_PASSWORD` power SMTP email delivery.
+- `DEBUG` and `ALLOWED_HOSTS` can be changed when preparing for deployment.
