@@ -9,11 +9,10 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.db.models import Count, Q
 import time
 import json
-import math
-
 from .models import Exercise, Plan, PlanExercise, SessionLog, AnalysisSession
 from .forms import UserSignupForm, PlanForm, SessionLogForm, ExerciseForm, AnalysisFeedbackForm
 from .services.feedback import generate_ai_draft, send_feedback_email
+from .services.analysis import build_summary, create_analysis_state, extract_squat_points, update_squat_analysis_state
 
 # Role helpers
 def is_physio(user):
@@ -539,33 +538,7 @@ def analysis_stream(request, session_id):
     mp_drawing = mp.solutions.drawing_utils
 
     # Running counters for this session
-    total_frames = 0
-    flagged_frames = 0
-    rule_counts = {
-        'knee_valgus': 0,
-        'shallow_depth': 0,
-        'forward_lean': 0,
-    }
-    angle_sums = {
-        'knee': 0.0,
-        'hip': 0.0,
-    }
-    angle_counts = {
-        'knee': 0,
-        'hip': 0,
-    }
-
-    # Small helper to compute a 2D angle
-    def _angle(a, b, c):
-        ba = (a[0] - b[0], a[1] - b[1])
-        bc = (c[0] - b[0], c[1] - b[1])
-        dot = ba[0] * bc[0] + ba[1] * bc[1]
-        mag_ba = math.hypot(ba[0], ba[1])
-        mag_bc = math.hypot(bc[0], bc[1])
-        if mag_ba == 0 or mag_bc == 0:
-            return None
-        cos_angle = max(-1.0, min(1.0, dot / (mag_ba * mag_bc)))
-        return math.degrees(math.acos(cos_angle))
+    analysis_state = create_analysis_state()
 
     # Generator yields frames for StreamingHttpResponse
     def frame_generator():
@@ -593,9 +566,8 @@ def analysis_stream(request, session_id):
                         continue
                     read_failures = 0
 
-                    nonlocal total_frames, flagged_frames
                     # Update counters on every frame
-                    total_frames += 1
+                    analysis_state["total_frames"] += 1
                     frame_tick += 1
 
                     # Periodically check if the session was ended
@@ -620,108 +592,17 @@ def analysis_stream(request, session_id):
                         lms = results.pose_landmarks.landmark
                         lm = mp_pose.PoseLandmark
 
-                        def _get_point(landmark):
-                            return (landmark.x, landmark.y, landmark.visibility)
-
-                        # Pull keypoints needed for simple rules
-                        left_hip = _get_point(lms[lm.LEFT_HIP])
-                        left_knee = _get_point(lms[lm.LEFT_KNEE])
-                        left_ankle = _get_point(lms[lm.LEFT_ANKLE])
-                        left_shoulder = _get_point(lms[lm.LEFT_SHOULDER])
-
-                        right_hip = _get_point(lms[lm.RIGHT_HIP])
-                        right_knee = _get_point(lms[lm.RIGHT_KNEE])
-                        right_ankle = _get_point(lms[lm.RIGHT_ANKLE])
-                        right_shoulder = _get_point(lms[lm.RIGHT_SHOULDER])
-
-                        # Only process when the main joints are visible
-                        visibility_threshold = 0.45
-                        keypoints_visible = all([
-                            left_hip[2] > visibility_threshold,
-                            left_knee[2] > visibility_threshold,
-                            left_ankle[2] > visibility_threshold,
-                            right_hip[2] > visibility_threshold,
-                            right_knee[2] > visibility_threshold,
-                            right_ankle[2] > visibility_threshold,
-                            left_shoulder[2] > visibility_threshold,
-                            right_shoulder[2] > visibility_threshold,
-                        ])
-
-                        if keypoints_visible:
-                            # Reduce to just x/y for our calculations
-                            left_hip_xy = (left_hip[0], left_hip[1])
-                            left_knee_xy = (left_knee[0], left_knee[1])
-                            left_ankle_xy = (left_ankle[0], left_ankle[1])
-                            left_shoulder_xy = (left_shoulder[0], left_shoulder[1])
-
-                            right_hip_xy = (right_hip[0], right_hip[1])
-                            right_knee_xy = (right_knee[0], right_knee[1])
-                            right_ankle_xy = (right_ankle[0], right_ankle[1])
-                            right_shoulder_xy = (right_shoulder[0], right_shoulder[1])
-
-                            # Compute angles used in the simple rules
-                            knee_angle_left = _angle(left_hip_xy, left_knee_xy, left_ankle_xy)
-                            knee_angle_right = _angle(right_hip_xy, right_knee_xy, right_ankle_xy)
-                            hip_angle_left = _angle(left_shoulder_xy, left_hip_xy, left_knee_xy)
-                            hip_angle_right = _angle(right_shoulder_xy, right_hip_xy, right_knee_xy)
-
-                            # Rule checks (simple thresholds)
-                            knee_valgus = False
-                            if left_knee_xy[0] > left_ankle_xy[0] + 0.03:
-                                knee_valgus = True
-                            if right_knee_xy[0] < right_ankle_xy[0] - 0.03:
-                                knee_valgus = True
-
-                            shallow_depth = False
-                            if left_hip_xy[1] <= left_knee_xy[1] - 0.02:
-                                shallow_depth = True
-                            if right_hip_xy[1] <= right_knee_xy[1] - 0.02:
-                                shallow_depth = True
-
-                            forward_lean = False
-                            if hip_angle_left is not None and hip_angle_left < 60:
-                                forward_lean = True
-                            if hip_angle_right is not None and hip_angle_right < 60:
-                                forward_lean = True
-
-                            # Count breaches for this frame
-                            breached = False
-                            if knee_valgus:
-                                rule_counts['knee_valgus'] += 1
-                                breached = True
-                            if shallow_depth:
-                                rule_counts['shallow_depth'] += 1
-                                breached = True
-                            if forward_lean:
-                                rule_counts['forward_lean'] += 1
-                                breached = True
-                            if breached:
-                                flagged_frames += 1
-
-                            # Track running averages for key angles
-                            angles = [a for a in [knee_angle_left, knee_angle_right] if a is not None]
-                            if angles:
-                                angle_sums['knee'] += sum(angles) / len(angles)
-                                angle_counts['knee'] += 1
-                            hip_angles = [a for a in [hip_angle_left, hip_angle_right] if a is not None]
-                            if hip_angles:
-                                angle_sums['hip'] += sum(hip_angles) / len(hip_angles)
-                                angle_counts['hip'] += 1
+                        # Pull visible squat keypoints and update rule counters when usable.
+                        squat_points = extract_squat_points(lms, lm)
+                        if squat_points:
+                            update_squat_analysis_state(analysis_state, squat_points)
 
                     # Periodically persist a summary for the live session
                     if frame_tick % 10 == 0:
-                        summary = {
-                            'rules': rule_counts,
-                            'angles': {
-                                'knee_avg': round(angle_sums['knee'] / angle_counts['knee'], 1) if angle_counts['knee'] else None,
-                                'hip_avg': round(angle_sums['hip'] / angle_counts['hip'], 1) if angle_counts['hip'] else None,
-                            },
-                            'total_frames': total_frames,
-                            'flagged_frames': flagged_frames,
-                        }
+                        summary = build_summary(analysis_state)
                         AnalysisSession.objects.filter(pk=session.pk).update(
-                            total_frames=total_frames,
-                            flagged_frames=flagged_frames,
+                            total_frames=analysis_state["total_frames"],
+                            flagged_frames=analysis_state["flagged_frames"],
                             summary_json=json.dumps(summary)
                         )
 
@@ -736,20 +617,12 @@ def analysis_stream(request, session_id):
         finally:
             # Always release the camera
             cap.release()
-            if total_frames > 0:
+            if analysis_state["total_frames"] > 0:
                 # Final summary save after the stream ends
-                summary = {
-                    'rules': rule_counts,
-                        'angles': {
-                            'knee_avg': round(angle_sums['knee'] / angle_counts['knee'], 1) if angle_counts['knee'] else None,
-                            'hip_avg': round(angle_sums['hip'] / angle_counts['hip'], 1) if angle_counts['hip'] else None,
-                        },
-                    'total_frames': total_frames,
-                    'flagged_frames': flagged_frames,
-                }
+                summary = build_summary(analysis_state)
                 AnalysisSession.objects.filter(pk=session.pk).update(
-                    total_frames=total_frames,
-                    flagged_frames=flagged_frames,
+                    total_frames=analysis_state["total_frames"],
+                    flagged_frames=analysis_state["flagged_frames"],
                     summary_json=json.dumps(summary)
                 )
 
