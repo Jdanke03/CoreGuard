@@ -641,7 +641,7 @@ def analysis_stream(request, session_id):
                         right_shoulder = _get_point(lms[lm.RIGHT_SHOULDER])
 
                         # Only process when the main joints are visible
-                        visibility_threshold = 0.6
+                        visibility_threshold = 0.45
                         keypoints_visible = all([
                             left_hip[2] > visibility_threshold,
                             left_knee[2] > visibility_threshold,
