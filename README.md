@@ -1,5 +1,7 @@
 # CoreGuard
 
+[![Django CI](https://github.com/Jdanke03/CoreGuard/actions/workflows/django.yml/badge.svg)](https://github.com/Jdanke03/CoreGuard/actions/workflows/django.yml)
+
 CoreGuard is a rehabilitation support platform for physiotherapists and clients. The current version began as a Django prototype for assigning rehab plans, logging client progress, running live squat analysis, and sending physiotherapist feedback.
 
 This personal repository continues CoreGuard beyond the original university submission. The goal is to evolve it from a local Django web app into a more complete product with a modern web dashboard, mobile client experience, stronger analysis workflows, and production-ready infrastructure.
