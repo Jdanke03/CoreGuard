@@ -8,6 +8,10 @@ from tracker.models import AnalysisSession, Exercise, Plan, PlanExercise, Sessio
 
 
 class ApiRouteTests(TestCase):
+    def response_items(self, response):
+        payload = response.json()
+        return payload["results"] if isinstance(payload, dict) and "results" in payload else payload
+
     def setUp(self):
         self.physio_group = Group.objects.create(name="Physio")
         self.physio = User.objects.create_user(
@@ -69,8 +73,8 @@ class ApiRouteTests(TestCase):
         response = self.client.get("/api/plans/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)
-        self.assertEqual(response.json()[0]["name"], "Knee Rehab")
+        self.assertEqual(len(self.response_items(response)), 1)
+        self.assertEqual(self.response_items(response)[0]["name"], "Knee Rehab")
 
     def test_physio_only_sees_plans_they_created(self):
         self.client.login(username="physio", password="testpass")
@@ -78,14 +82,14 @@ class ApiRouteTests(TestCase):
         response = self.client.get("/api/plans/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)
-        self.assertEqual(response.json()[0]["client_username"], "client")
+        self.assertEqual(len(self.response_items(response)), 1)
+        self.assertEqual(self.response_items(response)[0]["client_username"], "client")
 
     def test_plan_api_includes_prescription_details(self):
         self.client.login(username="client", password="testpass")
 
         response = self.client.get("/api/plans/")
-        prescription = response.json()[0]["prescriptions"][0]
+        prescription = self.response_items(response)[0]["prescriptions"][0]
 
         self.assertEqual(prescription["sets"], 3)
         self.assertEqual(prescription["reps"], 10)
@@ -97,8 +101,18 @@ class ApiRouteTests(TestCase):
         response = self.client.get("/api/analysis-sessions/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)
-        self.assertEqual(response.json()[0]["exercise_name"], "Squat")
+        self.assertEqual(len(self.response_items(response)), 1)
+        self.assertEqual(self.response_items(response)[0]["exercise_name"], "Squat")
+
+    def test_list_endpoints_are_paginated(self):
+        self.client.login(username="client", password="testpass")
+
+        response = self.client.get("/api/plans/")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["count"], 1)
+        self.assertIn("results", payload)
 
     def test_client_can_create_progress_log_for_own_plan(self):
         self.client.login(username="client", password="testpass")
@@ -241,7 +255,7 @@ class ApiRouteTests(TestCase):
         response = self.client.get("/api/clients/")
 
         self.assertEqual(response.status_code, 200)
-        payload = response.json()
+        payload = self.response_items(response)
         self.assertEqual(len(payload), 1)
         self.assertEqual(payload[0]["username"], "client")
         self.assertEqual(payload[0]["active_plans"], 1)
@@ -269,7 +283,7 @@ class ApiRouteTests(TestCase):
         response = self.client.get("/api/analysis-sessions/")
 
         self.assertEqual(response.status_code, 200)
-        metrics = response.json()[0]["summary_metrics"]
+        metrics = self.response_items(response)[0]["summary_metrics"]
         self.assertEqual(metrics["rules"]["shallow_depth"], 10)
         self.assertEqual(metrics["angles"]["knee_avg"], 94.5)
         self.assertEqual(metrics["total_frames"], 120)
@@ -389,9 +403,9 @@ class ApiRouteTests(TestCase):
         searched = self.client.get("/api/exercises/?search=wall")
 
         self.assertEqual(filtered.status_code, 200)
-        self.assertEqual({item["name"] for item in filtered.json()}, {"Wall Sit"})
+        self.assertEqual({item["name"] for item in self.response_items(filtered)}, {"Wall Sit"})
         self.assertEqual(searched.status_code, 200)
-        self.assertEqual(searched.json()[0]["name"], "Wall Sit")
+        self.assertEqual(self.response_items(searched)[0]["name"], "Wall Sit")
 
     def test_plan_api_supports_safe_filtering(self):
         second_plan = Plan.objects.create(
@@ -407,8 +421,8 @@ class ApiRouteTests(TestCase):
         response = self.client.get("/api/plans/?requires_analysis=false&ordering=name")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([item["name"] for item in response.json()], [second_plan.name])
-        self.assertNotIn("Other Plan", [item["name"] for item in response.json()])
+        self.assertEqual([item["name"] for item in self.response_items(response)], [second_plan.name])
+        self.assertNotIn("Other Plan", [item["name"] for item in self.response_items(response)])
 
     def test_logs_api_supports_search_and_ordering(self):
         SessionLog.objects.create(
@@ -422,8 +436,8 @@ class ApiRouteTests(TestCase):
         response = self.client.get("/api/logs/?search=soreness&ordering=-pain_level")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)
-        self.assertEqual(response.json()[0]["pain_level"], 6)
+        self.assertEqual(len(self.response_items(response)), 1)
+        self.assertEqual(self.response_items(response)[0]["pain_level"], 6)
 
     def test_analysis_api_supports_feedback_filtering(self):
         reviewed = AnalysisSession.objects.create(
@@ -438,7 +452,7 @@ class ApiRouteTests(TestCase):
         response = self.client.get("/api/analysis-sessions/?feedback_shared=true")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([item["id"] for item in response.json()], [reviewed.id])
+        self.assertEqual([item["id"] for item in self.response_items(response)], [reviewed.id])
 
     def test_clients_api_supports_search(self):
         self.client.login(username="physio", password="testpass")
@@ -446,8 +460,8 @@ class ApiRouteTests(TestCase):
         response = self.client.get("/api/clients/?search=client")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)
-        self.assertEqual(response.json()[0]["username"], "client")
+        self.assertEqual(len(self.response_items(response)), 1)
+        self.assertEqual(self.response_items(response)[0]["username"], "client")
 
 
 class ApiAuthTests(TestCase):

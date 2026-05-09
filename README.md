@@ -85,6 +85,14 @@ python3 manage.py migrate
 python3 manage.py runserver
 ```
 
+Optional: create a realistic local dataset for demos and frontend development:
+
+```bash
+python3 manage.py seed_demo_data
+```
+
+This creates a demo physiotherapist, two demo clients, exercises, plans, progress logs, and one reviewed analysis session. The command is safe to run more than once.
+
 The app uses local media files and a local SQLite database during development. These are intentionally not committed.
 
 ## Environment Notes
@@ -96,6 +104,7 @@ The app uses local media files and a local SQLite database during development. T
 - `OPENAI_API_KEY` powers AI-assisted feedback drafts.
 - `GMAIL_USER` and `GMAIL_APP_PASSWORD` power SMTP email delivery.
 - `DEBUG` and `ALLOWED_HOSTS` can be changed when preparing for deployment.
+- API list endpoints are paginated by default with a page size of 20.
 
 ## Background-Ready Workflows
 
