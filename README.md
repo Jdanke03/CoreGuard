@@ -39,7 +39,7 @@ Current API endpoints:
 - `/api/analysis-sessions/{id}/generate-draft/` - physiotherapists can generate an AI feedback draft
 - `/api/analysis-sessions/{id}/send-feedback/` - physiotherapists can share final feedback and trigger email delivery with a clear `email_delivery` status
 
-API responses are filtered by the logged-in user. Clients only see their own plans, logs, and analysis sessions. Physiotherapists see records connected to plans they created. Token authentication is available for future mobile and standalone frontend clients.
+API responses are filtered by the logged-in user. Clients only see their own plans, logs, and analysis sessions. Physiotherapists see records connected to plans they created. Token authentication is available for future mobile and standalone frontend clients. List endpoints also support practical query controls such as `search`, `ordering`, and model-specific filters like `body_area`, `difficulty`, `requires_analysis`, `plan`, and `feedback_shared`.
 
 ## Product Direction
 

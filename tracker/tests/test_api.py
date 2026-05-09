@@ -376,6 +376,79 @@ class ApiRouteTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertFalse(Exercise.objects.filter(name="Client Exercise Attempt").exists())
 
+    def test_exercise_api_supports_search_and_filtering(self):
+        Exercise.objects.create(
+            name="Wall Sit",
+            description="Hold a seated position against a wall.",
+            body_area="Legs",
+            difficulty="Medium",
+        )
+        self.client.login(username="client", password="testpass")
+
+        filtered = self.client.get("/api/exercises/?difficulty=Medium")
+        searched = self.client.get("/api/exercises/?search=wall")
+
+        self.assertEqual(filtered.status_code, 200)
+        self.assertEqual({item["name"] for item in filtered.json()}, {"Wall Sit"})
+        self.assertEqual(searched.status_code, 200)
+        self.assertEqual(searched.json()[0]["name"], "Wall Sit")
+
+    def test_plan_api_supports_safe_filtering(self):
+        second_plan = Plan.objects.create(
+            user=self.client_user,
+            created_by=self.physio,
+            name="General Strength",
+            description="Follow-up plan",
+            duration_weeks=4,
+            requires_analysis=False,
+        )
+        self.client.login(username="physio", password="testpass")
+
+        response = self.client.get("/api/plans/?requires_analysis=false&ordering=name")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([item["name"] for item in response.json()], [second_plan.name])
+        self.assertNotIn("Other Plan", [item["name"] for item in response.json()])
+
+    def test_logs_api_supports_search_and_ordering(self):
+        SessionLog.objects.create(
+            user=self.client_user,
+            plan=self.plan,
+            pain_level=6,
+            notes="Harder session with mild knee soreness",
+        )
+        self.client.login(username="client", password="testpass")
+
+        response = self.client.get("/api/logs/?search=soreness&ordering=-pain_level")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["pain_level"], 6)
+
+    def test_analysis_api_supports_feedback_filtering(self):
+        reviewed = AnalysisSession.objects.create(
+            client=self.client_user,
+            plan=self.plan,
+            exercise_name="Squat",
+            feedback_shared=True,
+            physio_feedback="Reviewed session.",
+        )
+        self.client.login(username="physio", password="testpass")
+
+        response = self.client.get("/api/analysis-sessions/?feedback_shared=true")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([item["id"] for item in response.json()], [reviewed.id])
+
+    def test_clients_api_supports_search(self):
+        self.client.login(username="physio", password="testpass")
+
+        response = self.client.get("/api/clients/?search=client")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["username"], "client")
+
 
 class ApiAuthTests(TestCase):
     def setUp(self):

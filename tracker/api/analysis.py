@@ -1,3 +1,5 @@
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -14,6 +16,11 @@ from tracker.tasks.feedback import (
 
 class AnalysisSessionViewSet(AuthenticatedReadOnlyViewSet):
     serializer_class = AnalysisSessionSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ["plan", "client", "feedback_shared", "exercise_name"]
+    search_fields = ["exercise_name", "physio_feedback", "client__username", "plan__name"]
+    ordering_fields = ["started_at", "ended_at", "total_frames", "flagged_frames", "feedback_at"]
+    ordering = ["-started_at"]
 
     def get_permissions(self):
         if self.action in {"generate_draft", "send_feedback"}:
@@ -27,8 +34,8 @@ class AnalysisSessionViewSet(AuthenticatedReadOnlyViewSet):
         user = self.request.user
         queryset = AnalysisSession.objects.select_related("client", "plan", "plan__created_by")
         if is_physio(user):
-            return queryset.filter(plan__created_by=user).order_by("-started_at")
-        return queryset.filter(client=user).order_by("-started_at")
+            return queryset.filter(plan__created_by=user)
+        return queryset.filter(client=user)
 
     def _get_physio_session(self):
         return self.get_object()
