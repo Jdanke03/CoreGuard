@@ -77,3 +77,76 @@ class ApiRouteTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
         self.assertEqual(response.json()[0]["exercise_name"], "Squat")
+
+
+class ApiAuthTests(TestCase):
+    def setUp(self):
+        self.client_user = User.objects.create_user(
+            username="client",
+            email="client@example.com",
+            password="testpass",
+        )
+        self.physio_group = Group.objects.create(name="Physio")
+        self.physio = User.objects.create_user(
+            username="physio",
+            email="physio@example.com",
+            password="testpass",
+        )
+        self.physio.groups.add(self.physio_group)
+
+    def test_login_returns_token_and_user_payload(self):
+        response = self.client.post("/api/auth/login/", {
+            "username": "client",
+            "password": "testpass",
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("token", response.json())
+        self.assertEqual(response.json()["user"]["username"], "client")
+        self.assertEqual(response.json()["user"]["role"], "client")
+
+    def test_invalid_login_fails(self):
+        response = self.client.post("/api/auth/login/", {
+            "username": "client",
+            "password": "wrongpass",
+        })
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_token_can_access_me_endpoint(self):
+        login_response = self.client.post("/api/auth/login/", {
+            "username": "client",
+            "password": "testpass",
+        })
+        token = login_response.json()["token"]
+
+        response = self.client.get("/api/me/", HTTP_AUTHORIZATION=f"Token {token}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["email"], "client@example.com")
+        self.assertEqual(response.json()["role"], "client")
+
+    def test_me_endpoint_returns_physio_role(self):
+        login_response = self.client.post("/api/auth/login/", {
+            "username": "physio",
+            "password": "testpass",
+        })
+        token = login_response.json()["token"]
+
+        response = self.client.get("/api/me/", HTTP_AUTHORIZATION=f"Token {token}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["role"], "physio")
+
+    def test_logout_deletes_token(self):
+        login_response = self.client.post("/api/auth/login/", {
+            "username": "client",
+            "password": "testpass",
+        })
+        token = login_response.json()["token"]
+
+        logout_response = self.client.post("/api/auth/logout/", HTTP_AUTHORIZATION=f"Token {token}")
+        me_response = self.client.get("/api/me/", HTTP_AUTHORIZATION=f"Token {token}")
+
+        self.assertEqual(logout_response.status_code, 204)
+        self.assertIn(me_response.status_code, [401, 403])

@@ -93,3 +93,15 @@ class AnalysisSessionSerializer(serializers.ModelSerializer):
             "feedback_shared",
             "feedback_at",
         ]
+
+
+class UserSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    username = serializers.CharField(read_only=True)
+    email = serializers.EmailField(read_only=True)
+    role = serializers.SerializerMethodField()
+
+    def get_role(self, user):
+        from tracker.services.roles import is_physio
+
+        return "physio" if is_physio(user) else "client"

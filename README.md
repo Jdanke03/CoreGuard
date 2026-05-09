@@ -24,13 +24,16 @@ CoreGuard now includes a read-only authenticated API under `/api/`. This is inte
 
 Current API endpoints:
 
+- `/api/auth/login/` - returns an API token for valid credentials
+- `/api/auth/logout/` - deletes the current user's API token
+- `/api/me/` - returns the current user's profile and role
 - `/api/exercises/`
 - `/api/plans/`
 - `/api/plan-exercises/`
 - `/api/logs/`
 - `/api/analysis-sessions/`
 
-API responses are filtered by the logged-in user. Clients only see their own plans, logs, and analysis sessions. Physiotherapists see records connected to plans they created.
+API responses are filtered by the logged-in user. Clients only see their own plans, logs, and analysis sessions. Physiotherapists see records connected to plans they created. Token authentication is available for future mobile and standalone frontend clients.
 
 ## Product Direction
 

@@ -1,3 +1,4 @@
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from tracker.api.views import (
@@ -6,6 +7,9 @@ from tracker.api.views import (
     PlanExerciseViewSet,
     PlanViewSet,
     SessionLogViewSet,
+    login_view,
+    logout_view,
+    me_view,
 )
 
 router = DefaultRouter()
@@ -15,4 +19,8 @@ router.register("plan-exercises", PlanExerciseViewSet, basename="api-plan-exerci
 router.register("logs", SessionLogViewSet, basename="api-log")
 router.register("analysis-sessions", AnalysisSessionViewSet, basename="api-analysis-session")
 
-urlpatterns = router.urls
+urlpatterns = [
+    path("auth/login/", login_view, name="api-login"),
+    path("auth/logout/", logout_view, name="api-logout"),
+    path("me/", me_view, name="api-me"),
+] + router.urls
