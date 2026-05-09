@@ -1,3 +1,4 @@
+from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
@@ -6,6 +7,7 @@ from tracker.api.serializers import (
     ExerciseSerializer,
     PlanExerciseSerializer,
     PlanSerializer,
+    SessionLogCreateSerializer,
     SessionLogSerializer,
 )
 from tracker.models import AnalysisSession, Exercise, Plan, PlanExercise, SessionLog
@@ -43,8 +45,18 @@ class PlanExerciseViewSet(AuthenticatedReadOnlyViewSet):
         return queryset.filter(plan__user=user)
 
 
-class SessionLogViewSet(AuthenticatedReadOnlyViewSet):
-    serializer_class = SessionLogSerializer
+class SessionLogViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return SessionLogCreateSerializer
+        return SessionLogSerializer
 
     def get_queryset(self):
         user = self.request.user

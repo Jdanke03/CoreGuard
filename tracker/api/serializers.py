@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from tracker.models import AnalysisSession, Exercise, Plan, PlanExercise, SessionLog
+from tracker.services.roles import is_physio
 
 
 class ExerciseSerializer(serializers.ModelSerializer):
@@ -69,6 +70,32 @@ class SessionLogSerializer(serializers.ModelSerializer):
             "pain_level",
             "notes",
         ]
+
+
+class SessionLogCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SessionLog
+        fields = ["id", "plan", "date", "pain_level", "notes"]
+        read_only_fields = ["id", "date"]
+
+    def validate_plan(self, plan):
+        user = self.context["request"].user
+
+        if is_physio(user):
+            raise serializers.ValidationError("Physiotherapists cannot create client progress logs.")
+
+        if plan.user_id != user.id:
+            raise serializers.ValidationError("You can only log progress against your own plan.")
+
+        return plan
+
+    def validate_pain_level(self, value):
+        if value < 1 or value > 10:
+            raise serializers.ValidationError("Pain level must be between 1 and 10.")
+        return value
+
+    def create(self, validated_data):
+        return SessionLog.objects.create(user=self.context["request"].user, **validated_data)
 
 
 class AnalysisSessionSerializer(serializers.ModelSerializer):

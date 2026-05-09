@@ -78,6 +78,57 @@ class ApiRouteTests(TestCase):
         self.assertEqual(len(response.json()), 1)
         self.assertEqual(response.json()[0]["exercise_name"], "Squat")
 
+    def test_client_can_create_progress_log_for_own_plan(self):
+        self.client.login(username="client", password="testpass")
+
+        response = self.client.post("/api/logs/", {
+            "plan": self.plan.id,
+            "pain_level": 4,
+            "notes": "Completed the session with mild discomfort.",
+        })
+
+        self.assertEqual(response.status_code, 201)
+        log = SessionLog.objects.latest("id")
+        self.assertEqual(log.user, self.client_user)
+        self.assertEqual(log.plan, self.plan)
+        self.assertEqual(log.pain_level, 4)
+
+    def test_client_cannot_create_progress_log_for_another_clients_plan(self):
+        self.client.login(username="client", password="testpass")
+
+        response = self.client.post("/api/logs/", {
+            "plan": self.other_plan.id,
+            "pain_level": 4,
+            "notes": "Trying to log against another plan.",
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(
+            SessionLog.objects.filter(user=self.client_user, plan=self.other_plan).exists()
+        )
+
+    def test_physio_cannot_create_client_progress_log(self):
+        self.client.login(username="physio", password="testpass")
+
+        response = self.client.post("/api/logs/", {
+            "plan": self.plan.id,
+            "pain_level": 4,
+            "notes": "Physio should not create client logs.",
+        })
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_progress_log_pain_level_must_be_between_one_and_ten(self):
+        self.client.login(username="client", password="testpass")
+
+        response = self.client.post("/api/logs/", {
+            "plan": self.plan.id,
+            "pain_level": 11,
+            "notes": "Invalid pain level.",
+        })
+
+        self.assertEqual(response.status_code, 400)
+
 
 class ApiAuthTests(TestCase):
     def setUp(self):

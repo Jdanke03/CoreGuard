@@ -20,7 +20,7 @@ This personal repository continues CoreGuard beyond the original university subm
 
 ## API Foundation
 
-CoreGuard now includes a read-only authenticated API under `/api/`. This is intended as the foundation for future mobile and modern frontend clients while keeping the existing Django template UI intact.
+CoreGuard now includes an authenticated API under `/api/`. This is intended as the foundation for future mobile and modern frontend clients while keeping the existing Django template UI intact.
 
 Current API endpoints:
 
@@ -30,7 +30,7 @@ Current API endpoints:
 - `/api/exercises/`
 - `/api/plans/`
 - `/api/plan-exercises/`
-- `/api/logs/`
+- `/api/logs/` - clients can also create their own progress logs with `POST`
 - `/api/analysis-sessions/`
 
 API responses are filtered by the logged-in user. Clients only see their own plans, logs, and analysis sessions. Physiotherapists see records connected to plans they created. Token authentication is available for future mobile and standalone frontend clients.
