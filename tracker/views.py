@@ -8,8 +8,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import StreamingHttpResponse, HttpResponse
 import time
 import json
-from .models import Plan, SessionLog, AnalysisSession
-from .forms import UserSignupForm, PlanForm, SessionLogForm, AnalysisFeedbackForm, ProfileEmailForm
+from .models import Plan, AnalysisSession
+from .forms import UserSignupForm, PlanForm, AnalysisFeedbackForm, ProfileEmailForm
 from .services.feedback import generate_ai_draft, send_feedback_email
 from .services.analysis import build_summary, create_analysis_state, extract_squat_points, update_squat_analysis_state
 from .services.plans import build_exercise_prescription_rows, save_plan_prescriptions
@@ -214,51 +214,6 @@ def plan_delete(request, pk):
 
 
 
-# Progress logs (clients only)
-@login_required
-@user_passes_test(is_not_physio)
-def log_list(request):
-    # This view is client-only by default (guarded above)
-    if is_physio(request.user):
-        # All logs for plans created by this physio
-        logs = SessionLog.objects.filter(plan__created_by=request.user).order_by('-date')
-    else:
-        # Normal user: their own logs
-        logs = SessionLog.objects.filter(user=request.user).order_by('-date')
-    # Render the log list page
-    return render(request, 'log_list.html', {'logs': logs})
-
-
-@login_required
-@user_passes_test(is_not_physio)
-def log_create(request, plan_id=None):
-    # Client creates a progress log linked to a plan
-    initial = {}
-    plan = None
-
-    if plan_id is not None:
-        # Only allow patients to log for their own assigned plans
-        plan = get_object_or_404(Plan, pk=plan_id)
-        if not is_physio(request.user) and plan.user != request.user:
-            return redirect('plan_list')
-        # Pre-select the plan on the form
-        initial['plan'] = plan
-
-    if request.method == "POST":
-        form = SessionLogForm(request.POST, user=request.user)
-        if form.is_valid():
-            log = form.save(commit=False)
-            log.user = request.user
-            log.save()
-            # After saving, route back to the plan or log list
-            if plan:
-                return redirect('plan_detail', pk=plan.pk)
-            return redirect('log_list')
-    else:
-        # GET: show empty form (or pre-filled plan)
-        form = SessionLogForm(user=request.user, initial=initial)
-
-    return render(request, 'log_form.html', {'form': form})
 
 
 # Live analysis (client-initiated)

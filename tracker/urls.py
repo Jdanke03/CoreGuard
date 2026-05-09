@@ -2,6 +2,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 from . import views_exercises
+from . import views_logs
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -28,9 +29,9 @@ urlpatterns = [
     path('clients/<int:client_id>/', views.physio_client_detail, name='physio_client_detail'),
 
     # Logs
-    path('logs/', views.log_list, name='log_list'),
-    path('logs/create/', views.log_create, name='log_create'),
-    path('logs/create/<int:plan_id>/', views.log_create, name='log_create_for_plan'),
+    path('logs/', views_logs.log_list, name='log_list'),
+    path('logs/create/', views_logs.log_create, name='log_create'),
+    path('logs/create/<int:plan_id>/', views_logs.log_create, name='log_create_for_plan'),
 
     # Analysis
     path('analysis/start/', views.analysis_start, name='analysis_start'),
