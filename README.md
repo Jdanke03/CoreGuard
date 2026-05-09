@@ -42,6 +42,18 @@ Current API endpoints:
 
 API responses are filtered by the logged-in user. Clients only see their own plans, logs, and analysis sessions. Physiotherapists see records connected to plans they created. Token authentication is available for future mobile and standalone frontend clients. List endpoints also support practical query controls such as `search`, `ordering`, and model-specific filters like `body_area`, `difficulty`, `requires_analysis`, `plan`, and `feedback_shared`.
 
+## CoreGuard Studio Frontend
+
+A new standalone frontend prototype lives in `frontend/`. It is a dependency-free SPA that consumes the Django API and gives CoreGuard a more modern product-style interface.
+
+Run it locally after starting Django:
+
+```bash
+python3 -m http.server 3000 --directory frontend
+```
+
+Then open `http://localhost:3000`. See `frontend/README.md` for demo login details.
+
 ## Product Direction
 
 The next version of CoreGuard will move toward a multi-platform architecture:

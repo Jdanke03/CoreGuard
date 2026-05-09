@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CoreGuard Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,600;6..72,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" aria-label="CoreGuard navigation">
+        <a class="brand" href="#overview" aria-label="CoreGuard Studio home">
+          <span class="brand-mark">CG</span>
+          <span><strong>CoreGuard</strong><small>Movement health studio</small></span>
+        </a>
+        <nav class="nav-links">
+          <a href="#overview" class="nav-link active" data-route="overview">Overview</a>
+          <a href="#plans" class="nav-link" data-route="plans">Plans</a>
+          <a href="#analysis" class="nav-link" data-route="analysis">Analysis</a>
+          <a href="#exercises" class="nav-link" data-route="exercises">Exercises</a>
+        </nav>
+        <section class="api-card">
+          <p>API status</p>
+          <strong id="apiStatus">Waiting</strong>
+          <span id="apiBaseLabel">http://127.0.0.1:8000</span>
+        </section>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div><p class="eyebrow">CoreGuard Studio</p><h1 id="pageTitle">Your rehab command centre</h1></div>
+          <div class="topbar-actions">
+            <button class="ghost-button" id="demoModeButton" type="button">Use demo view</button>
+            <button class="primary-button" id="logoutButton" type="button" hidden>Logout</button>
+          </div>
+        </header>
+
+        <section class="login-panel" id="loginPanel">
+          <div>
+            <p class="eyebrow">Connect to Django API</p>
+            <h2>Sign in to load live CoreGuard data.</h2>
+            <p>Use your existing Django account or run <code>python3 manage.py seed_demo_data</code> and sign in as the seeded physio or client.</p>
+          </div>
+          <form class="login-form" id="loginForm">
+            <label>Username <input name="username" autocomplete="username" placeholder="demo_physio" required /></label>
+            <label>Password <input name="password" type="password" autocomplete="current-password" placeholder="CoreGuardDemo123" required /></label>
+            <label>API base URL <input name="apiBase" value="http://127.0.0.1:8000" required /></label>
+            <button class="primary-button" type="submit">Open dashboard</button>
+            <p class="form-error" id="loginError" role="alert"></p>
+          </form>
+        </section>
+
+        <section id="appContent" class="app-content" hidden>
+          <section class="hero-card">
+            <div>
+              <p class="eyebrow" id="roleLabel">Live workspace</p>
+              <h2 id="heroTitle">Welcome back</h2>
+              <p id="heroText">CoreGuard turns plans, analysis sessions, and feedback into a clear next step.</p>
+              <div class="hero-actions"><a class="primary-link" href="#overview">View next actions</a><a class="secondary-link" href="#plans">Review plans</a></div>
+            </div>
+            <div class="movement-orb" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+              <svg viewBox="0 0 220 220"><path d="M65 55 L102 72 L137 72 L174 92"/><path d="M103 73 L82 115 L126 124"/><path d="M126 124 L118 178"/><path d="M82 115 L54 162"/><circle cx="65" cy="55" r="8"/><circle cx="102" cy="72" r="8"/><circle cx="137" cy="72" r="8"/><circle cx="174" cy="92" r="8"/><circle cx="82" cy="115" r="8"/><circle cx="126" cy="124" r="8"/><circle cx="54" cy="162" r="8"/><circle cx="118" cy="178" r="8"/></svg>
+            </div>
+          </section>
+
+          <section class="metric-grid" id="metricsGrid" aria-label="Dashboard metrics"></section>
+
+          <section class="content-grid" id="overview">
+            <article class="panel wide-panel"><div class="panel-heading"><div><p class="eyebrow">Action queue</p><h3>What needs attention</h3></div><span class="pill" id="actionCount">0 actions</span></div><div class="action-list" id="actionList"></div></article>
+            <article class="panel chart-panel"><div class="panel-heading"><div><p class="eyebrow">Session status</p><h3>Feedback flow</h3></div></div><div class="donut-wrap"><div class="donut" id="feedbackDonut"></div><div class="donut-legend" id="feedbackLegend"></div></div></article>
+          </section>
+
+          <section class="panel" id="plans"><div class="panel-heading"><div><p class="eyebrow">Plan workspace</p><h3>Rehab plans</h3></div><button class="ghost-button small" id="refreshButton" type="button">Refresh data</button></div><div class="card-list" id="plansList"></div></section>
+
+          <section class="content-grid" id="analysis">
+            <article class="panel wide-panel"><div class="panel-heading"><div><p class="eyebrow">Movement review</p><h3>Recent analysis sessions</h3></div></div><div class="session-list" id="analysisList"></div></article>
+            <article class="panel compact-panel"><div class="panel-heading"><div><p class="eyebrow">Signal quality</p><h3>Rule alerts</h3></div></div><div class="mini-bars" id="ruleBars"></div></article>
+          </section>
+
+          <section class="panel" id="exercises"><div class="panel-heading"><div><p class="eyebrow">Library</p><h3>Exercise catalogue</h3></div></div><div class="exercise-grid" id="exerciseGrid"></div></section>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
