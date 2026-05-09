@@ -17,6 +17,21 @@ This personal repository continues CoreGuard beyond the original university subm
 - Feedback delivery through the app and email
 - SQLite database for local development
 
+
+## API Foundation
+
+CoreGuard now includes a read-only authenticated API under `/api/`. This is intended as the foundation for future mobile and modern frontend clients while keeping the existing Django template UI intact.
+
+Current API endpoints:
+
+- `/api/exercises/`
+- `/api/plans/`
+- `/api/plan-exercises/`
+- `/api/logs/`
+- `/api/analysis-sessions/`
+
+API responses are filtered by the logged-in user. Clients only see their own plans, logs, and analysis sessions. Physiotherapists see records connected to plans they created.
+
 ## Product Direction
 
 The next version of CoreGuard will move toward a multi-platform architecture:

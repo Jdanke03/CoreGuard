@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('tracker.api.urls')),
     path('', include('tracker.urls')),  # root URL goes to our tracker app
 ]
 
