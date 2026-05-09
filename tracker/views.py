@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import StreamingHttpResponse, HttpResponse
-from django.db.models import Count, Q
+from django.db.models import Q
 import time
 import json
 from .models import Exercise, Plan, SessionLog, AnalysisSession
@@ -14,6 +14,7 @@ from .forms import UserSignupForm, PlanForm, SessionLogForm, ExerciseForm, Analy
 from .services.feedback import generate_ai_draft, send_feedback_email
 from .services.analysis import build_summary, create_analysis_state, extract_squat_points, update_squat_analysis_state
 from .services.plans import build_exercise_prescription_rows, save_plan_prescriptions
+from .services.dashboard import build_home_context
 
 # Role helpers
 def is_physio(user):
@@ -32,86 +33,9 @@ def home(request):
     if not request.user.is_authenticated:
         return render(request, 'landing.html')
 
-    # Logged-in users stay on the existing dashboard-style home page
-    exercises = Exercise.objects.all()[:3]
+    # Logged-in dashboard data is assembled in a service so views stay thin.
     is_physio_user = request.user.groups.filter(name="Physio").exists()
-    context = {
-        'exercises': exercises,
-        'is_physio': is_physio_user,
-    }
-
-    if is_physio_user:
-        physio_plans = Plan.objects.filter(created_by=request.user)
-        physio_sessions = AnalysisSession.objects.filter(plan__created_by=request.user).select_related('client', 'plan')
-        client_ids = physio_plans.values_list('user_id', flat=True).distinct()
-
-        feedback_sent = physio_sessions.filter(feedback_shared=True).count()
-        awaiting_review = physio_sessions.filter(feedback_shared=False).count()
-
-        sessions_per_client = list(
-            physio_sessions.values('client__username')
-            .annotate(total=Count('id'))
-            .order_by('-total', 'client__username')[:6]
-        )
-
-        clients_needing_attention = (
-            physio_sessions.filter(feedback_shared=False)
-            .order_by('-flagged_frames', '-started_at')[:4]
-        )
-
-        recent_sessions = physio_sessions.order_by('-started_at')[:5]
-
-        context.update({
-            'physio_total_clients': len(set(client_ids)),
-            'physio_active_plans': physio_plans.count(),
-            'physio_awaiting_review': awaiting_review,
-            'physio_feedback_sent': feedback_sent,
-            'recent_sessions': recent_sessions,
-            'clients_needing_attention': clients_needing_attention,
-            'feedback_chart_data': json.dumps({
-                'labels': ['Awaiting review', 'Feedback sent'],
-                'values': [awaiting_review, feedback_sent],
-            }),
-            'sessions_per_client_data': json.dumps({
-                'labels': [row['client__username'] for row in sessions_per_client],
-                'values': [row['total'] for row in sessions_per_client],
-            }),
-        })
-    else:
-        client_plans = (
-            Plan.objects.filter(user=request.user)
-            .prefetch_related('plan_exercises__exercise')
-            .order_by('-created_at')
-        )
-        client_logs = SessionLog.objects.filter(user=request.user)
-        client_sessions = AnalysisSession.objects.filter(client=request.user).select_related('plan').order_by('-started_at')
-        feedback_ready = client_sessions.filter(feedback_shared=True).count()
-        pending_review = client_sessions.filter(feedback_shared=False).count()
-        latest_feedback_session = client_sessions.filter(feedback_shared=True).first()
-        latest_analysis_session = client_sessions.first()
-        latest_client_plan = client_plans.first()
-        latest_plan_items = list(latest_client_plan.plan_exercises.select_related('exercise').all()[:4]) if latest_client_plan else []
-
-        context.update({
-            'client_active_plans': client_plans.count(),
-            'client_sessions_logged': client_logs.count(),
-            'client_analyses_completed': client_sessions.count(),
-            'client_feedback_ready': feedback_ready,
-            'latest_feedback_session': latest_feedback_session,
-            'latest_analysis_session': latest_analysis_session,
-            'latest_client_plan': latest_client_plan,
-            'latest_plan_items': latest_plan_items,
-            'client_next_action': (
-                'Open your latest feedback to review your physiotherapist’s comments.'
-                if latest_feedback_session else
-                'Complete a live analysis session when your plan requires it.'
-            ),
-            'client_status_chart_data': json.dumps({
-                'labels': ['Feedback ready', 'Awaiting review'],
-                'values': [feedback_ready, pending_review],
-            }),
-        })
-
+    context = build_home_context(request.user, is_physio_user)
     return render(request, 'home.html', context)
 
 
