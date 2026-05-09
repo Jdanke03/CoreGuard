@@ -3,6 +3,7 @@ from django.contrib.auth import views as auth_views
 from . import views
 from . import views_exercises
 from . import views_logs
+from . import views_plans
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -21,12 +22,12 @@ urlpatterns = [
     path('exercises/<int:pk>/delete/', views_exercises.exercise_delete, name='exercise_delete'),
 
     # Plans
-    path('plans/', views.plan_list, name='plan_list'),
-    path('plans/create/', views.plan_create, name='plan_create'),
-    path('plans/<int:pk>/', views.plan_detail, name='plan_detail'),
-    path('plans/<int:pk>/edit/', views.plan_edit, name='plan_edit'),
-    path('plans/<int:pk>/delete/', views.plan_delete, name='plan_delete'),
-    path('clients/<int:client_id>/', views.physio_client_detail, name='physio_client_detail'),
+    path('plans/', views_plans.plan_list, name='plan_list'),
+    path('plans/create/', views_plans.plan_create, name='plan_create'),
+    path('plans/<int:pk>/', views_plans.plan_detail, name='plan_detail'),
+    path('plans/<int:pk>/edit/', views_plans.plan_edit, name='plan_edit'),
+    path('plans/<int:pk>/delete/', views_plans.plan_delete, name='plan_delete'),
+    path('clients/<int:client_id>/', views_plans.physio_client_detail, name='physio_client_detail'),
 
     # Logs
     path('logs/', views_logs.log_list, name='log_list'),

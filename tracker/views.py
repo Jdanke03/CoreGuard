@@ -9,10 +9,9 @@ from django.http import StreamingHttpResponse, HttpResponse
 import time
 import json
 from .models import Plan, AnalysisSession
-from .forms import UserSignupForm, PlanForm, AnalysisFeedbackForm, ProfileEmailForm
+from .forms import UserSignupForm, AnalysisFeedbackForm, ProfileEmailForm
 from .services.feedback import generate_ai_draft, send_feedback_email
 from .services.analysis import build_summary, create_analysis_state, extract_squat_points, update_squat_analysis_state
-from .services.plans import build_exercise_prescription_rows, save_plan_prescriptions
 from .services.dashboard import build_home_context
 from .services.roles import is_physio, is_not_physio
 
@@ -73,144 +72,6 @@ def profile_view(request):
         'form': form,
         'role': role,
     })
-
-
-
-# Plans (list, detail, create, edit, delete)
-@login_required
-def plan_list(request):
-    # Shared view: physios see their clients, clients see their plans
-    client_id = None
-    if is_physio(request.user):
-        # Physio: show clients they created plans for
-        client_ids = list(
-            Plan.objects.filter(created_by=request.user)
-            .values_list('user_id', flat=True)
-            .distinct()
-        )
-        # Build a client list for the physio dashboard
-        clients = User.objects.filter(id__in=client_ids).order_by('username')
-        return render(request, 'physio_clients.html', {
-            'clients': clients,
-        })
-    else:
-        # Normal user: show plans assigned to them
-        plans = Plan.objects.filter(user=request.user).order_by('-created_at')
-        clients = None
-
-    # Client view uses plan_list.html
-    return render(request, 'plan_list.html', {
-        'plans': plans,
-        'clients': clients,
-        'selected_client_id': client_id if is_physio(request.user) else '',
-    })
-
-@login_required
-def plan_detail(request, pk):
-    # Show plan details (with logs + analysis sessions)
-    plan = get_object_or_404(Plan, pk=pk)
-
-    # Permissions: patient or physio who created it
-    if not (
-        (not is_physio(request.user) and plan.user == request.user) or
-        (is_physio(request.user) and plan.created_by == request.user)
-    ):
-        # Guard against unauthorized access
-        return redirect('plan_list')
-
-    # Load session logs and analysis sessions linked to this plan
-    logs = SessionLog.objects.filter(plan=plan).order_by('-date')
-    analysis_sessions = AnalysisSession.objects.filter(plan=plan).order_by('-started_at')
-    plan_exercises = plan.plan_exercises.select_related('exercise').order_by('order', 'id')
-
-    return render(request, 'plan_detail.html', {
-        'plan': plan,
-        'logs': logs,
-        'analysis_sessions': analysis_sessions,
-        'plan_exercises': plan_exercises,
-        # Used to control which actions appear in the template
-        'is_physio': is_physio(request.user),
-    })
-
-
-@login_required
-@user_passes_test(is_physio)
-def plan_create(request):
-    # Physio creates a plan and assigns it to a client
-    if request.method == "POST":
-        form = PlanForm(request.POST)
-        if form.is_valid():
-            plan = form.save(commit=False)
-            # Link this plan to the physio who created it
-            plan.created_by = request.user
-            plan.save()
-            form.save_m2m()
-            save_plan_prescriptions(plan, form.cleaned_data['exercises'], request.POST)
-            return redirect('plan_list')
-    else:
-        # Pre-fill the client if coming from a physio client page
-        initial = {}
-        client_id = request.GET.get('client_id')
-        if client_id:
-            initial['user'] = client_id
-        form = PlanForm(initial=initial)
-
-    return render(request, 'plan_form.html', {
-        'form': form,
-        'title': 'Create Plan',
-        'exercise_rows': build_exercise_prescription_rows(post_data=request.POST if request.method == "POST" else None),
-    })
-
-
-@login_required
-@user_passes_test(is_physio)
-def physio_client_detail(request, client_id):
-    # Physio-focused page for a single client
-    client = get_object_or_404(User, pk=client_id)
-    # Only show plans created by this physio for this client
-    plans = Plan.objects.filter(created_by=request.user, user=client).order_by('-created_at')
-    return render(request, 'physio_client_detail.html', {
-        'client': client,
-        'plans': plans,
-    })
-
-
-
-@login_required
-@user_passes_test(is_physio)
-def plan_edit(request, pk):
-    # Physio can edit a plan they created
-    plan = get_object_or_404(Plan, pk=pk, created_by=request.user)
-
-    if request.method == "POST":
-        form = PlanForm(request.POST, instance=plan)
-        if form.is_valid():
-            updated_plan = form.save()
-            save_plan_prescriptions(updated_plan, form.cleaned_data['exercises'], request.POST)
-            return redirect('plan_detail', pk=plan.pk)
-    else:
-        # GET: fill the form with current plan data
-        form = PlanForm(instance=plan)
-
-    return render(request, 'plan_form.html', {
-        'form': form,
-        'title': 'Edit Plan',
-        'exercise_rows': build_exercise_prescription_rows(plan, request.POST if request.method == "POST" else None),
-    })
-
-
-
-@login_required
-@user_passes_test(is_physio)
-def plan_delete(request, pk):
-    # Physio can delete a plan they created
-    plan = get_object_or_404(Plan, pk=pk, created_by=request.user)
-    if request.method == "POST":
-        plan.delete()
-        return redirect('plan_list')
-
-    # GET: confirm delete screen
-    return render(request, 'plan_confirm_delete.html', {'plan': plan})
 
 
 
