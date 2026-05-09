@@ -10,7 +10,7 @@ from django.db.models import Q
 import time
 import json
 from .models import Exercise, Plan, SessionLog, AnalysisSession
-from .forms import UserSignupForm, PlanForm, SessionLogForm, ExerciseForm, AnalysisFeedbackForm
+from .forms import UserSignupForm, PlanForm, SessionLogForm, ExerciseForm, AnalysisFeedbackForm, ProfileEmailForm
 from .services.feedback import generate_ai_draft, send_feedback_email
 from .services.analysis import build_summary, create_analysis_state, extract_squat_points, update_squat_analysis_state
 from .services.plans import build_exercise_prescription_rows, save_plan_prescriptions
@@ -59,8 +59,6 @@ def logout_user(request):
 # Profile view (read-only details + email update)
 @login_required
 def profile_view(request):
-    from .forms import ProfileEmailForm
-
     # Role label for display
     role = "Physio" if is_physio(request.user) else "Client"
 
