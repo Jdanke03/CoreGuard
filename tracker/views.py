@@ -9,10 +9,11 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.db.models import Count, Q
 import time
 import json
-from .models import Exercise, Plan, PlanExercise, SessionLog, AnalysisSession
+from .models import Exercise, Plan, SessionLog, AnalysisSession
 from .forms import UserSignupForm, PlanForm, SessionLogForm, ExerciseForm, AnalysisFeedbackForm
 from .services.feedback import generate_ai_draft, send_feedback_email
 from .services.analysis import build_summary, create_analysis_state, extract_squat_points, update_squat_analysis_state
+from .services.plans import build_exercise_prescription_rows, save_plan_prescriptions
 
 # Role helpers
 def is_physio(user):
@@ -23,57 +24,6 @@ def is_not_physio(user):
     # Non-physio users are normal clients
     return not user.groups.filter(name="Physio").exists()
 
-
-def _build_exercise_prescription_rows(plan=None, post_data=None):
-    # Builds one row per exercise so the plan form can collect sets and reps
-    existing = {}
-    if plan is not None:
-        existing = {
-            item.exercise_id: item
-            for item in plan.plan_exercises.select_related('exercise')
-        }
-
-    rows = []
-    for exercise in Exercise.objects.order_by('name'):
-        item = existing.get(exercise.id)
-        rows.append({
-            'exercise': exercise,
-            'sets_name': f'exercise_{exercise.id}_sets',
-            'reps_name': f'exercise_{exercise.id}_reps',
-            'sets_value': post_data.get(f'exercise_{exercise.id}_sets') if post_data else (item.sets if item else 3),
-            'reps_value': post_data.get(f'exercise_{exercise.id}_reps') if post_data else (item.reps if item else 10),
-        })
-    return rows
-
-
-def _save_plan_prescriptions(plan, selected_exercises, post_data):
-    # Sync the per-exercise prescription rows after the main plan is saved
-    selected_ids = [exercise.id for exercise in selected_exercises]
-    PlanExercise.objects.filter(plan=plan).exclude(exercise_id__in=selected_ids).delete()
-
-    for index, exercise in enumerate(selected_exercises):
-        sets_raw = post_data.get(f'exercise_{exercise.id}_sets', '3')
-        reps_raw = post_data.get(f'exercise_{exercise.id}_reps', '10')
-
-        try:
-            sets = max(1, int(sets_raw))
-        except (TypeError, ValueError):
-            sets = 3
-
-        try:
-            reps = max(1, int(reps_raw))
-        except (TypeError, ValueError):
-            reps = 10
-
-        PlanExercise.objects.update_or_create(
-            plan=plan,
-            exercise=exercise,
-            defaults={
-                'sets': sets,
-                'reps': reps,
-                'order': index,
-            }
-        )
 
 
 # Home
@@ -339,7 +289,7 @@ def plan_create(request):
             plan.created_by = request.user
             plan.save()
             form.save_m2m()
-            _save_plan_prescriptions(plan, form.cleaned_data['exercises'], request.POST)
+            save_plan_prescriptions(plan, form.cleaned_data['exercises'], request.POST)
             return redirect('plan_list')
     else:
         # Pre-fill the client if coming from a physio client page
@@ -352,7 +302,7 @@ def plan_create(request):
     return render(request, 'plan_form.html', {
         'form': form,
         'title': 'Create Plan',
-        'exercise_rows': _build_exercise_prescription_rows(post_data=request.POST if request.method == "POST" else None),
+        'exercise_rows': build_exercise_prescription_rows(post_data=request.POST if request.method == "POST" else None),
     })
 
 
@@ -380,7 +330,7 @@ def plan_edit(request, pk):
         form = PlanForm(request.POST, instance=plan)
         if form.is_valid():
             updated_plan = form.save()
-            _save_plan_prescriptions(updated_plan, form.cleaned_data['exercises'], request.POST)
+            save_plan_prescriptions(updated_plan, form.cleaned_data['exercises'], request.POST)
             return redirect('plan_detail', pk=plan.pk)
     else:
         # GET: fill the form with current plan data
@@ -389,7 +339,7 @@ def plan_edit(request, pk):
     return render(request, 'plan_form.html', {
         'form': form,
         'title': 'Edit Plan',
-        'exercise_rows': _build_exercise_prescription_rows(plan, request.POST if request.method == "POST" else None),
+        'exercise_rows': build_exercise_prescription_rows(plan, request.POST if request.method == "POST" else None),
     })
 
 
