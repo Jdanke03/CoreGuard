@@ -1,4 +1,3 @@
-from django.utils import timezone
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -6,8 +5,11 @@ from tracker.api.base import AuthenticatedReadOnlyViewSet
 from tracker.api.permissions import IsAssignedPhysioForAnalysis
 from tracker.api.serializers import AnalysisSessionSerializer, FeedbackSendSerializer
 from tracker.models import AnalysisSession
-from tracker.services.feedback import generate_ai_draft, send_feedback_email
 from tracker.services.roles import is_physio
+from tracker.tasks.feedback import (
+    generate_feedback_draft_task,
+    send_feedback_email_task,
+)
 
 
 class AnalysisSessionViewSet(AuthenticatedReadOnlyViewSet):
@@ -34,12 +36,10 @@ class AnalysisSessionViewSet(AuthenticatedReadOnlyViewSet):
     @action(detail=True, methods=["post"], url_path="generate-draft")
     def generate_draft(self, request, pk=None):
         session = self._get_physio_session()
-        draft = generate_ai_draft(session)
-        session.physio_feedback_draft = draft
-        if not session.physio_feedback:
-            session.physio_feedback = draft
-        session.save(update_fields=["physio_feedback_draft", "physio_feedback"])
-        return Response(AnalysisSessionSerializer(session, context={"request": request}).data)
+        result = generate_feedback_draft_task(session.id)
+        data = AnalysisSessionSerializer(result.session, context={"request": request}).data
+        data["draft_status"] = result.status
+        return Response(data)
 
     @action(detail=True, methods=["post"], url_path="send-feedback")
     def send_feedback(self, request, pk=None):
@@ -47,12 +47,12 @@ class AnalysisSessionViewSet(AuthenticatedReadOnlyViewSet):
         serializer = FeedbackSendSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        session.physio_feedback = serializer.validated_data["physio_feedback"]
-        session.feedback_shared = True
-        session.feedback_at = timezone.now()
-        session.save(update_fields=["physio_feedback", "feedback_shared", "feedback_at"])
-        email_sent = send_feedback_email(session)
+        result = send_feedback_email_task(
+            session.id,
+            serializer.validated_data["physio_feedback"],
+        )
 
-        data = AnalysisSessionSerializer(session, context={"request": request}).data
-        data["email_sent"] = email_sent
+        data = AnalysisSessionSerializer(result.session, context={"request": request}).data
+        data["email_delivery"] = result.email_status
+        data["email_error"] = result.email_error
         return Response(data)

@@ -10,10 +10,22 @@ from tracker.models import AnalysisSession, Exercise, Plan, PlanExercise, Sessio
 class ApiRouteTests(TestCase):
     def setUp(self):
         self.physio_group = Group.objects.create(name="Physio")
-        self.physio = User.objects.create_user(username="physio", password="testpass")
+        self.physio = User.objects.create_user(
+            username="physio",
+            email="physio@example.com",
+            password="testpass",
+        )
         self.physio.groups.add(self.physio_group)
-        self.client_user = User.objects.create_user(username="client", password="testpass")
-        self.other_client = User.objects.create_user(username="other", password="testpass")
+        self.client_user = User.objects.create_user(
+            username="client",
+            email="client@example.com",
+            password="testpass",
+        )
+        self.other_client = User.objects.create_user(
+            username="other",
+            email="other@example.com",
+            password="testpass",
+        )
 
         self.exercise = Exercise.objects.create(
             name="Squat",
@@ -262,7 +274,7 @@ class ApiRouteTests(TestCase):
         self.assertEqual(metrics["angles"]["knee_avg"], 94.5)
         self.assertEqual(metrics["total_frames"], 120)
 
-    @patch("tracker.api.analysis.generate_ai_draft", return_value="Keep your knees aligned and slow the movement slightly.")
+    @patch("tracker.tasks.feedback.generate_ai_draft", return_value="Keep your knees aligned and slow the movement slightly.")
     def test_physio_can_generate_feedback_draft(self, mocked_generate):
         self.client.login(username="physio", password="testpass")
         session = AnalysisSession.objects.get(client=self.client_user)
@@ -273,9 +285,10 @@ class ApiRouteTests(TestCase):
         session.refresh_from_db()
         self.assertEqual(session.physio_feedback_draft, "Keep your knees aligned and slow the movement slightly.")
         self.assertEqual(response.json()["physio_feedback"], "Keep your knees aligned and slow the movement slightly.")
+        self.assertEqual(response.json()["draft_status"], "ready")
         mocked_generate.assert_called_once_with(session)
 
-    @patch("tracker.api.analysis.send_feedback_email", return_value=True)
+    @patch("tracker.tasks.feedback.send_feedback_email", return_value=True)
     def test_physio_can_send_final_feedback(self, mocked_email):
         self.client.login(username="physio", password="testpass")
         session = AnalysisSession.objects.get(client=self.client_user)
@@ -289,8 +302,44 @@ class ApiRouteTests(TestCase):
         session.refresh_from_db()
         self.assertTrue(session.feedback_shared)
         self.assertEqual(session.physio_feedback, "Good effort. Work on keeping your hips lower.")
-        self.assertTrue(response.json()["email_sent"])
+        self.assertEqual(response.json()["email_delivery"], "sent")
         mocked_email.assert_called_once_with(session)
+
+    @patch("tracker.tasks.feedback.send_feedback_email", side_effect=RuntimeError("SMTP timeout"))
+    def test_feedback_is_still_saved_when_email_delivery_fails(self, mocked_email):
+        self.client.login(username="physio", password="testpass")
+        session = AnalysisSession.objects.get(client=self.client_user)
+
+        response = self.client.post(
+            f"/api/analysis-sessions/{session.id}/send-feedback/",
+            {"physio_feedback": "Saved even if email fails."},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        session.refresh_from_db()
+        self.assertTrue(session.feedback_shared)
+        self.assertEqual(session.physio_feedback, "Saved even if email fails.")
+        self.assertEqual(response.json()["email_delivery"], "failed")
+        self.assertIn("SMTP timeout", response.json()["email_error"])
+        mocked_email.assert_called_once_with(session)
+
+    @patch("tracker.tasks.feedback.send_feedback_email")
+    def test_feedback_email_is_skipped_when_client_has_no_email(self, mocked_email):
+        self.client.login(username="physio", password="testpass")
+        self.client_user.email = ""
+        self.client_user.save(update_fields=["email"])
+        session = AnalysisSession.objects.get(client=self.client_user)
+
+        response = self.client.post(
+            f"/api/analysis-sessions/{session.id}/send-feedback/",
+            {"physio_feedback": "Saved inside CoreGuard only."},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        session.refresh_from_db()
+        self.assertTrue(session.feedback_shared)
+        self.assertEqual(response.json()["email_delivery"], "skipped_no_email")
+        mocked_email.assert_not_called()
 
     def test_physio_can_create_exercise_with_image(self):
         self.client.login(username="physio", password="testpass")

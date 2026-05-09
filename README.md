@@ -37,7 +37,7 @@ Current API endpoints:
 - `/api/logs/` - clients can also create their own progress logs with `POST`
 - `/api/analysis-sessions/` - includes parsed summary metrics for app-friendly display
 - `/api/analysis-sessions/{id}/generate-draft/` - physiotherapists can generate an AI feedback draft
-- `/api/analysis-sessions/{id}/send-feedback/` - physiotherapists can share final feedback and trigger email delivery
+- `/api/analysis-sessions/{id}/send-feedback/` - physiotherapists can share final feedback and trigger email delivery with a clear `email_delivery` status
 
 API responses are filtered by the logged-in user. Clients only see their own plans, logs, and analysis sessions. Physiotherapists see records connected to plans they created. Token authentication is available for future mobile and standalone frontend clients.
 
@@ -93,3 +93,7 @@ The app uses local media files and a local SQLite database during development. T
 - `OPENAI_API_KEY` powers AI-assisted feedback drafts.
 - `GMAIL_USER` and `GMAIL_APP_PASSWORD` power SMTP email delivery.
 - `DEBUG` and `ALLOWED_HOSTS` can be changed when preparing for deployment.
+
+## Background-Ready Workflows
+
+CoreGuard keeps feedback draft generation and email delivery behind task-style functions in `tracker/tasks/`. They still run synchronously during local development, but the boundaries are ready for Celery or another background worker later.
