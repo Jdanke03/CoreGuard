@@ -69,6 +69,8 @@ Then fill in the values you need:
 SECRET_KEY=change-me-for-production
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+CORS_ALLOW_CREDENTIALS=False
 DATABASE_URL=
 OPENAI_API_KEY=your_openai_api_key
 GMAIL_USER=your_gmail_address
@@ -90,6 +92,7 @@ The app uses local media files and a local SQLite database during development. T
 - `.env` stores local secrets and should stay untracked.
 - `.env.example` documents the required variables without exposing real credentials.
 - `DATABASE_URL` is optional locally. Leave it blank to use SQLite, or set a PostgreSQL URL for deployment.
+- `CORS_ALLOWED_ORIGINS` controls which separate frontend apps can call the API in a browser.
 - `OPENAI_API_KEY` powers AI-assisted feedback drafts.
 - `GMAIL_USER` and `GMAIL_APP_PASSWORD` power SMTP email delivery.
 - `DEBUG` and `ALLOWED_HOSTS` can be changed when preparing for deployment.
