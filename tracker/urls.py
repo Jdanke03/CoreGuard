@@ -4,6 +4,7 @@ from . import views
 from . import views_exercises
 from . import views_logs
 from . import views_plans
+from . import views_analysis
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -35,12 +36,12 @@ urlpatterns = [
     path('logs/create/<int:plan_id>/', views_logs.log_create, name='log_create_for_plan'),
 
     # Analysis
-    path('analysis/start/', views.analysis_start, name='analysis_start'),
-    path('analysis/start/<int:plan_id>/', views.analysis_start, name='analysis_start_for_plan'),
-    path('analysis/live/<int:session_id>/', views.analysis_live, name='analysis_live'),
-    path('analysis/stream/<int:session_id>/', views.analysis_stream, name='analysis_stream'),
-    path('analysis/summary/<int:session_id>/', views.analysis_summary, name='analysis_summary'),
-    path('analysis/stop/<int:session_id>/', views.analysis_stop, name='analysis_stop'),
-    path('analysis/cancel/<int:session_id>/', views.analysis_cancel, name='analysis_cancel'),
-    path('analysis/physio/', views.analysis_sessions_physio, name='analysis_sessions_physio'),
+    path('analysis/start/', views_analysis.analysis_start, name='analysis_start'),
+    path('analysis/start/<int:plan_id>/', views_analysis.analysis_start, name='analysis_start_for_plan'),
+    path('analysis/live/<int:session_id>/', views_analysis.analysis_live, name='analysis_live'),
+    path('analysis/stream/<int:session_id>/', views_analysis.analysis_stream, name='analysis_stream'),
+    path('analysis/summary/<int:session_id>/', views_analysis.analysis_summary, name='analysis_summary'),
+    path('analysis/stop/<int:session_id>/', views_analysis.analysis_stop, name='analysis_stop'),
+    path('analysis/cancel/<int:session_id>/', views_analysis.analysis_cancel, name='analysis_cancel'),
+    path('analysis/physio/', views_analysis.analysis_sessions_physio, name='analysis_sessions_physio'),
 ]
