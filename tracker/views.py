@@ -15,17 +15,7 @@ from .services.feedback import generate_ai_draft, send_feedback_email
 from .services.analysis import build_summary, create_analysis_state, extract_squat_points, update_squat_analysis_state
 from .services.plans import build_exercise_prescription_rows, save_plan_prescriptions
 from .services.dashboard import build_home_context
-
-# Role helpers
-def is_physio(user):
-    # Physio users are grouped under "Physio"
-    return user.is_authenticated and user.groups.filter(name="Physio").exists()
-
-def is_not_physio(user):
-    # Non-physio users are normal clients
-    return not user.groups.filter(name="Physio").exists()
-
-
+from .services.roles import is_physio, is_not_physio
 
 # Home
 def home(request):
