@@ -1,6 +1,7 @@
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from tracker.api.permissions import IsPhysio
 from tracker.api.serializers import ExerciseCreateSerializer, ExerciseSerializer
 from tracker.models import Exercise
 
@@ -13,6 +14,11 @@ class ExerciseViewSet(
 ):
     permission_classes = [IsAuthenticated]
     queryset = Exercise.objects.order_by("name")
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [IsPhysio()]
+        return super().get_permissions()
 
     def get_serializer_class(self):
         if self.action == "create":

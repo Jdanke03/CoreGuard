@@ -46,8 +46,6 @@ class ExerciseCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def validate(self, attrs):
-        if not is_physio(self.context["request"].user):
-            raise serializers.ValidationError("Only physiotherapists can create exercises.")
         return attrs
 
 
@@ -103,11 +101,7 @@ class PlanCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def validate(self, attrs):
-        request_user = self.context["request"].user
         prescriptions = attrs.get("prescriptions", [])
-
-        if not is_physio(request_user):
-            raise serializers.ValidationError("Only physiotherapists can create plans.")
 
         if is_physio(attrs["user"]):
             raise serializers.ValidationError("Plans must be assigned to a client account.")
@@ -172,9 +166,6 @@ class SessionLogCreateSerializer(serializers.ModelSerializer):
 
     def validate_plan(self, plan):
         user = self.context["request"].user
-
-        if is_physio(user):
-            raise serializers.ValidationError("Physiotherapists cannot create client progress logs.")
 
         if plan.user_id != user.id:
             raise serializers.ValidationError("You can only log progress against your own plan.")

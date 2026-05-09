@@ -1,9 +1,9 @@
 from django.utils import timezone
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from tracker.api.base import AuthenticatedReadOnlyViewSet
+from tracker.api.permissions import IsAssignedPhysioForAnalysis
 from tracker.api.serializers import AnalysisSessionSerializer, FeedbackSendSerializer
 from tracker.models import AnalysisSession
 from tracker.services.feedback import generate_ai_draft, send_feedback_email
@@ -12,6 +12,11 @@ from tracker.services.roles import is_physio
 
 class AnalysisSessionViewSet(AuthenticatedReadOnlyViewSet):
     serializer_class = AnalysisSessionSerializer
+
+    def get_permissions(self):
+        if self.action in {"generate_draft", "send_feedback"}:
+            return [IsAssignedPhysioForAnalysis()]
+        return super().get_permissions()
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
@@ -24,10 +29,7 @@ class AnalysisSessionViewSet(AuthenticatedReadOnlyViewSet):
         return queryset.filter(client=user).order_by("-started_at")
 
     def _get_physio_session(self):
-        session = self.get_object()
-        if not is_physio(self.request.user) or not session.plan or session.plan.created_by_id != self.request.user.id:
-            raise PermissionDenied("Only the assigned physiotherapist can manage analysis feedback.")
-        return session
+        return self.get_object()
 
     @action(detail=True, methods=["post"], url_path="generate-draft")
     def generate_draft(self, request, pk=None):

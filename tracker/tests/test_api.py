@@ -126,7 +126,7 @@ class ApiRouteTests(TestCase):
             "notes": "Physio should not create client logs.",
         })
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_progress_log_pain_level_must_be_between_one_and_ten(self):
         self.client.login(username="client", password="testpass")
@@ -220,7 +220,7 @@ class ApiRouteTests(TestCase):
             content_type="application/json",
         )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.assertFalse(Plan.objects.filter(name="Client Plan Attempt").exists())
 
     def test_physio_can_list_assigned_clients(self):
@@ -235,13 +235,12 @@ class ApiRouteTests(TestCase):
         self.assertEqual(payload[0]["active_plans"], 1)
         self.assertEqual(payload[0]["awaiting_review"], 1)
 
-    def test_client_clients_endpoint_is_empty(self):
+    def test_client_cannot_list_physio_clients(self):
         self.client.login(username="client", password="testpass")
 
         response = self.client.get("/api/clients/")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), [])
+        self.assertEqual(response.status_code, 403)
 
     def test_analysis_api_returns_clean_summary_metrics(self):
         self.client.login(username="client", password="testpass")
@@ -325,7 +324,7 @@ class ApiRouteTests(TestCase):
             "video_url": "",
         })
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.assertFalse(Exercise.objects.filter(name="Client Exercise Attempt").exists())
 
 

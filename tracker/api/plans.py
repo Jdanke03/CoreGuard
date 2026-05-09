@@ -2,6 +2,7 @@ from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from tracker.api.base import AuthenticatedReadOnlyViewSet
+from tracker.api.permissions import IsPhysio
 from tracker.api.serializers import PlanCreateSerializer, PlanExerciseSerializer, PlanSerializer
 from tracker.models import Plan, PlanExercise
 from tracker.services.roles import is_physio
@@ -14,6 +15,11 @@ class PlanViewSet(
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [IsPhysio()]
+        return super().get_permissions()
 
     def get_serializer_class(self):
         if self.action == "create":
