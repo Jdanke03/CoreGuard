@@ -226,6 +226,46 @@ class ApiAuthTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["role"], "physio")
 
+    def test_user_can_update_own_email(self):
+        login_response = self.client.post("/api/auth/login/", {
+            "username": "client",
+            "password": "testpass",
+        })
+        token = login_response.json()["token"]
+
+        response = self.client.patch(
+            "/api/me/",
+            {"email": "updated@example.com"},
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Token {token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["email"], "updated@example.com")
+        self.client_user.refresh_from_db()
+        self.assertEqual(self.client_user.email, "updated@example.com")
+
+    def test_user_cannot_update_email_to_an_existing_email(self):
+        User.objects.create_user(
+            username="other",
+            email="other@example.com",
+            password="testpass",
+        )
+        login_response = self.client.post("/api/auth/login/", {
+            "username": "client",
+            "password": "testpass",
+        })
+        token = login_response.json()["token"]
+
+        response = self.client.patch(
+            "/api/me/",
+            {"email": "other@example.com"},
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Token {token}",
+        )
+
+        self.assertEqual(response.status_code, 400)
+
     def test_logout_deletes_token(self):
         login_response = self.client.post("/api/auth/login/", {
             "username": "client",

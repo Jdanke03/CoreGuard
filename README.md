@@ -26,7 +26,7 @@ Current API endpoints:
 
 - `/api/auth/login/` - returns an API token for valid credentials
 - `/api/auth/logout/` - deletes the current user's API token
-- `/api/me/` - returns the current user's profile and role
+- `/api/me/` - returns the current user's profile and role, and supports email updates with `PATCH`
 - `/api/dashboard/` - returns role-specific dashboard metrics and latest activity
 - `/api/exercises/`
 - `/api/plans/`

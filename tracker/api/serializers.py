@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User
 
 from tracker.models import AnalysisSession, Exercise, Plan, PlanExercise, SessionLog
 from tracker.services.roles import is_physio
@@ -132,3 +133,21 @@ class UserSerializer(serializers.Serializer):
         from tracker.services.roles import is_physio
 
         return "physio" if is_physio(user) else "client"
+
+
+class UserUpdateSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        user = self.context["request"].user
+        email_exists = User.objects.exclude(pk=user.pk).filter(email__iexact=value).exists()
+
+        if email_exists:
+            raise serializers.ValidationError("This email address is already in use.")
+
+        return value
+
+    def update(self, instance, validated_data):
+        instance.email = validated_data["email"]
+        instance.save(update_fields=["email"])
+        return instance

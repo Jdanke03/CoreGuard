@@ -82,7 +82,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from tracker.api.serializers import UserSerializer
+from tracker.api.serializers import UserSerializer, UserUpdateSerializer
 
 
 @api_view(["POST"])
@@ -107,8 +107,18 @@ def logout_view(request):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(["GET"])
+@api_view(["GET", "PATCH"])
 def me_view(request):
+    if request.method == "PATCH":
+        serializer = UserUpdateSerializer(
+            request.user,
+            data=request.data,
+            partial=True,
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
     return Response(UserSerializer(request.user).data)
 
 
